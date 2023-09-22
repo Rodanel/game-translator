@@ -43,7 +43,8 @@ def browse_game():
         messagebox.showinfo(title="Detected a renpy game", message="Detected a renpy game! If this is wrong please report to me.")
     elif gameType == GameType.NONE:
         messagebox.showwarning(title="Not a supported game", message="This is not a supported game!\n\n"+filename)
-    return
+    if gameType != GameType.NONE and gameType != GameType.EMPTY:
+        toggle_state_button(startButton, "normal")
 def toggle_state_button(button: Button, state:str):
     button["state"] = state
     if state == "disabled":
