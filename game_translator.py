@@ -3,6 +3,7 @@ from tkinter import filedialog, messagebox
 from os import getcwd
 
 from src.detect_game import detect_game, GameType
+from src.style.buttons import enabledButtonColor, toggle_button_state
 
 # initialize window
 root = Tk()
@@ -44,16 +45,8 @@ def browse_game():
     elif gameType == GameType.NONE:
         messagebox.showwarning(title="Not a supported game", message="This is not a supported game!\n\n"+filename)
     if gameType != GameType.NONE and gameType != GameType.EMPTY:
-        toggle_state_button(startButton, "normal")
-def toggle_state_button(button: Button, state:str):
-    button["state"] = state
-    if state == "disabled":
-        button["background"] = disabledButtonColor
-    else:
-        button["background"] = enabledButtonColor
+        toggle_button_state(startButton, "normal")
 
-enabledButtonColor = "#008000"
-disabledButtonColor = "#386b38"
 
 browseButton = Button(root, text="Browse", background=enabledButtonColor, foreground="white", disabledforeground="white", command=browse_game)
 browseButton.grid(column=0, row=1, sticky='nesw')
@@ -64,7 +57,7 @@ margin1.grid(column=0, row=2, sticky='nesw')
 startButton = Button(root, text="Start", background=enabledButtonColor, foreground="white", disabledforeground="white")
 startButton.grid(column=0, row=3, sticky='nesw')
 
-toggle_state_button(startButton, "disabled")
+toggle_button_state(startButton, "disabled")
 
 # show window
 root.mainloop()
