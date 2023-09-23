@@ -195,7 +195,8 @@ def translate(renpyFrame: RenpyFrame):
                 f = open(bat_path, "x")
                 f.write(unren_content)
                 f.close()
-                spRpyc = subprocess.Popen(bat_path, cwd=dirname, stdout=subprocess.PIPE, bufsize=1)
+                CREATE_NO_WINDOW = 0x08000000
+                spRpyc = subprocess.Popen(bat_path, cwd=dirname, stdout=subprocess.PIPE, bufsize=1, creationflags=CREATE_NO_WINDOW)
                 counter = 0
                 while True:
                     line = spRpyc.stdout.readline()
