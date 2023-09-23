@@ -1,11 +1,12 @@
 from os import path, listdir
-import re, threading
+import re
 
 from tkinter import Tk, StringVar, BooleanVar, Frame, Label, Entry, Checkbutton, messagebox
 
 from src.tools.rpa import RpaEditor
 from src.style.frame import set_frame_attrs
 
+# renpy panel object
 class RenpyFrame(object):
 
     def __init__(self, root: Tk, mainFrame: Frame, filename:str):
@@ -42,6 +43,7 @@ class RenpyFrame(object):
         if self.__timer_id__:
             self.frame.after_cancel(self.__timer_id__)
 
+    # element properties
     @property
     def root(self) -> Tk:
         return self.__root__
@@ -103,7 +105,8 @@ class RenpyFrame(object):
     @lockLocalizationCheck.setter
     def lockLocalizationCheck(self, value: Checkbutton):
         self.__lockLocalizationCheck__ = value
-    
+
+    # hide renpy panel    
     def destroy(self):
         if self.titleLabel is not None:
             self.titleLabel.destroy()
