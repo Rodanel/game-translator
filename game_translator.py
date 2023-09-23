@@ -16,7 +16,7 @@ root.title("Game Translator by Rodanel")
 
 # set size
 window_width = 500
-window_height = 200
+window_height = 300
 
 # get the screen dimension
 screen_width = root.winfo_screenwidth()

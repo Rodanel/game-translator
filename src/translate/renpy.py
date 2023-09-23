@@ -1,9 +1,12 @@
-from os import path, listdir
+from os import path, listdir, remove, rmdir
 import re
+import subprocess
+import time
 
 from tkinter import Tk, StringVar, BooleanVar, Frame, Label, Entry, Checkbutton, messagebox
 
 from src.tools.rpa import RpaEditor
+from src.tools.unren import unren_content
 from src.style.frame import set_frame_attrs
 
 # renpy panel object
@@ -18,7 +21,7 @@ class RenpyFrame(object):
         self.__titleLabel__.grid(column=0, row=0, columnspan=2, sticky='new')
         self.__progress__ = StringVar()
         self.__timer_id__ = None
-        self.__progressLabel__ = Label(self.__frame__, textvariable=self.__progress__)
+        self.__progressLabel__ = Label(self.__frame__, textvariable=self.__progress__, wraplength=450)
         self.__progressLabel__.grid(column=0, row=1, columnspan=2, sticky='new')
         self.__gamePathLabel__ = Label(self.__frame__, text="Game: "+self.__filename__)
         self.__gamePathLabel__.grid(column=0, row=2, columnspan=2, sticky='new')
@@ -131,27 +134,77 @@ class RenpyFrame(object):
 
 
 def translate(renpyFrame: RenpyFrame):
+    skip_rpa = False
+    skip_rpyc = False
     print(renpyFrame.filename+ " will be translated to "+renpyFrame.languageName+"! Lock localization: "+ str(renpyFrame.lockLocalization))
     dirname = path.dirname(renpyFrame.filename)
     if len(renpyFrame.languageName) > 0 and re.match('^[abcdefghijklmnoprqstuwvyzx]+$',renpyFrame.languageName):
         renpyFrame.progressDefault()
         gamedir = path.join(dirname, "game")
         exception_occurred = False
-        for fname in listdir(gamedir):
-            fullpath = path.join(gamedir, fname)
-            if fname.endswith(".rpa"):
-                renpyFrame.start_loading()
-                try:
-                    renpyFrame.progress = "Exracting "+fname+"..."
-                    print("Exracting "+fname+"...")
-                    RpaEditor(fullpath, _extract=True, _version=2)
-                except Exception as e:
-                    renpyFrame.progress = ""
-                    exception_occurred = True
-                    messagebox.showerror("Could not extract archive", message="Could not extract \""+fname+"\" archive.\n\nError: "+str(e))                    
-                    break
-        if not exception_occurred:
-            renpyFrame.progress = "Rpa archives exracted successfully!"
+        if not skip_rpa:
+            for fname in listdir(gamedir):
+                fullpath = path.join(gamedir, fname)
+                if fname.endswith(".rpa"):
+                    renpyFrame.start_loading()
+                    try:
+                        renpyFrame.progress = "Exracting "+fname+"..."
+                        print("Exracting "+fname+"...")
+                        RpaEditor(fullpath, _extract=True, _version=2)
+                    except Exception as e:
+                        renpyFrame.progress = ""
+                        exception_occurred = True
+                        messagebox.showerror("Could not extract archive", message="Could not extract \""+fname+"\" archive.\n\nError: "+str(e))                    
+                        break
+        if not exception_occurred and not skip_rpyc:
+            try:
+                renpyFrame.progress = "Starting decompiling rpyc files."
+                bat_path = path.join(dirname, "unrent.bat")
+                if path.exists(bat_path):
+                    remove(bat_path)
+                f = open(bat_path, "x")
+                f.write(unren_content)
+                f.close()
+                spRpyc = subprocess.Popen(bat_path, cwd=dirname, stdout=subprocess.PIPE, bufsize=1)
+                while True:
+                    line = spRpyc.stdout.readline()
+                    renpyFrame.progress = line
+                    if not line: break
+                renpyFrame.progress = "Decompiling rpyc files completed. Removing temp files."
+                if path.exists(bat_path):
+                    remove(bat_path)
+                decompiler_path = path.join(dirname, "decompiler")
+                for decompiler_file in listdir(decompiler_path):
+                    remove(path.join(decompiler_path, decompiler_file))
+                if path.exists(decompiler_path):
+                    rmdir(decompiler_path)
+                _decomp_cab = path.join(dirname, "_decomp.cab")
+                if path.exists(_decomp_cab):
+                    remove(_decomp_cab)
+                _decomp_cab_tmp = path.join(dirname, "_decomp.cab.tmp")
+                if path.exists(_decomp_cab_tmp):
+                    remove(_decomp_cab_tmp)
+                deobfuscate_py = path.join(dirname, "deobfuscate.py")
+                if path.exists(deobfuscate_py):
+                    remove(deobfuscate_py)
+                deobfuscate_pyo = path.join(dirname, "deobfuscate.pyo")
+                if path.exists(deobfuscate_pyo):
+                    remove(deobfuscate_pyo)
+                unren_log = path.join(dirname, "unren.log")
+                if path.exists(unren_log):
+                    remove(unren_log)
+                unrpyc_py = path.join(dirname, "unrpyc.py")
+                if path.exists(unrpyc_py):
+                    remove(unrpyc_py)
+                unrpyc_pyo = path.join(dirname, "unrpyc.pyo")
+                if path.exists(unrpyc_pyo):
+                    remove(unrpyc_pyo)
+                time.sleep(3)
+                renpyFrame.progress = "Decompiling completed!"
+            except Exception as e:
+                renpyFrame.progress = ""
+                exception_occurred = True
+                messagebox.showerror("Could not decompile", message="Could not decompile rpyc files.\n\nError: "+str(e))
         renpyFrame.stop_loading()
     else:
         renpyFrame.progressRed()
