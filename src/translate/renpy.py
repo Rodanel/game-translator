@@ -36,8 +36,8 @@ class RenpyFrame(object):
         elif self.progress.endswith(".."):
             self.progress = self.progress + "."
         elif self.progress.endswith("."):
-            self.progress = self.progress + ".."
-        self.__timer_id__ = self.frame.after(100, self.start_loading, n+1)
+            self.progress = self.progress + "."
+        self.__timer_id__ = self.frame.after(500, self.start_loading, n+1)
     def stop_loading(self):
         if self.__timer_id__:
             self.frame.after_cancel(self.__timer_id__)
@@ -133,6 +133,7 @@ def translate(renpyFrame: RenpyFrame):
     if len(renpyFrame.languageName) > 0 and re.match('^[abcdefghijklmnoprqstuwvyzx]+$',renpyFrame.languageName):
         renpyFrame.progressDefault()
         gamedir = path.join(dirname, "game")
+        exception_occurred = False
         for fname in listdir(gamedir):
             fullpath = path.join(gamedir, fname)
             if fname.endswith(".rpa"):
@@ -143,8 +144,11 @@ def translate(renpyFrame: RenpyFrame):
                     RpaEditor(fullpath, _extract=True, _version=2)
                 except Exception as e:
                     renpyFrame.progress = ""
-                    messagebox.showerror("Could not extract archive", message="Could not extract \""+fname+"\" archive.\n\nError: "+str(e))
+                    exception_occurred = True
+                    messagebox.showerror("Could not extract archive", message="Could not extract \""+fname+"\" archive.\n\nError: "+str(e))                    
                     break
+        if not exception_occurred:
+            renpyFrame.progress = "Rpa archives exracted successfully!"
         renpyFrame.stop_loading()
     else:
         renpyFrame.progressRed()
