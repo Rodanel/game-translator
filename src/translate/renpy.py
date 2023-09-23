@@ -1,20 +1,22 @@
 from os import path, listdir
-import re
+import re, threading
 
-from tkinter import StringVar, BooleanVar, Frame, Label, Entry, Checkbutton
+from tkinter import Tk, StringVar, BooleanVar, Frame, Label, Entry, Checkbutton, messagebox
 
+from src.tools.rpa import RpaEditor
 from src.style.frame import set_frame_attrs
-
 
 class RenpyFrame(object):
 
-    def __init__(self, mainFrame: Frame, filename:str):
+    def __init__(self, root: Tk, mainFrame: Frame, filename:str):
+        self.__root__ = root
         self.__frame__ = None
         self.__filename__ = filename
-        set_frame_attrs(self.__frame__, mainFrame)
+        self.__frame__ = set_frame_attrs(self.__frame__, mainFrame)
         self.__titleLabel__ = Label(self.__frame__, text="Renpy Game Translation")
         self.__titleLabel__.grid(column=0, row=0, columnspan=2, sticky='new')
         self.__progress__ = StringVar()
+        self.__timer_id__ = None
         self.__progressLabel__ = Label(self.__frame__, textvariable=self.__progress__)
         self.__progressLabel__.grid(column=0, row=1, columnspan=2, sticky='new')
         self.__gamePathLabel__ = Label(self.__frame__, text="Game: "+self.__filename__)
@@ -27,7 +29,22 @@ class RenpyFrame(object):
         self.__lockLocalization__ = BooleanVar()
         self.__lockLocalizationCheck__ = Checkbutton(self.__frame__, text= "Lock translation. (Locks the game to this language. No need to update screens.rpy\nfile for adding language options if checked.)", variable=self.__lockLocalization__, onvalue=True, offvalue=False)
         self.__lockLocalizationCheck__.grid(column=0, row=4, columnspan=2, sticky="new")
-    
+
+    def start_loading(self, n=0):
+        if self.progress.endswith("..."):
+            self.progress = self.progress[:-2]
+        elif self.progress.endswith(".."):
+            self.progress = self.progress + "."
+        elif self.progress.endswith("."):
+            self.progress = self.progress + ".."
+        self.__timer_id__ = self.frame.after(100, self.start_loading, n+1)
+    def stop_loading(self):
+        if self.__timer_id__:
+            self.frame.after_cancel(self.__timer_id__)
+
+    @property
+    def root(self) -> Tk:
+        return self.__root__
     @property
     def frame(self) -> Frame:
         return self.__frame__
@@ -116,15 +133,19 @@ def translate(renpyFrame: RenpyFrame):
     if len(renpyFrame.languageName) > 0 and re.match('^[abcdefghijklmnoprqstuwvyzx]+$',renpyFrame.languageName):
         renpyFrame.progressDefault()
         gamedir = path.join(dirname, "game")
-        rpafound = False
         for fname in listdir(gamedir):
+            fullpath = path.join(gamedir, fname)
             if fname.endswith(".rpa"):
-                rpafound = True
-                break
-        if rpafound:
-            renpyFrame.progress = "rpa file found"
-        else:
-            renpyFrame.progress = "rpa file not found"
+                renpyFrame.start_loading()
+                try:
+                    renpyFrame.progress = "Exracting "+fname+"..."
+                    print("Exracting "+fname+"...")
+                    RpaEditor(fullpath, _extract=True, _version=2)
+                except Exception as e:
+                    renpyFrame.progress = ""
+                    messagebox.showerror("Could not extract archive", message="Could not extract \""+fname+"\" archive.\n\nError: "+str(e))
+                    break
+        renpyFrame.stop_loading()
     else:
         renpyFrame.progressRed()
         renpyFrame.progress = "Language name should be contain only english lowercase characters."

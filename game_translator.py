@@ -1,6 +1,7 @@
 from tkinter import *
 from tkinter import filedialog, messagebox
 from os import getcwd
+import threading
 
 from src.style.buttons import enabledButtonColor, toggle_button_state
 from src.style.frame import set_frame_attrs
@@ -69,7 +70,7 @@ def showFrame():
             emptyFrame.destroy()
         emptyFrame = None
     if gameType == GameType.RENPY:
-        renpyFrame = renpy.RenpyFrame(mainFrame, filename)
+        renpyFrame = renpy.RenpyFrame(root, mainFrame, filename)
     else:
         if renpyFrame is not None:
             renpyFrame.destroy()
@@ -91,12 +92,23 @@ def browse_game():
     showFrame()
 
 # start translation
-def start_translation():
-    global filename, gameType, renpyLanguageName, renpyLockLocalizationBool
+def translate():
+    global filename, gameType
     if gameType == GameType.RENPY and renpyFrame is not None:
-        renpy.translate(renpyFrame)
+        try:
+            toggle_button_state(startButton, "disabled")
+            renpy.translate(renpyFrame)
+        except Exception as e:
+            messagebox.showerror(title="Error", message=str(e))
+            toggle_button_state(startButton, "normal")
     elif gameType == GameType.NONE:
         messagebox.showwarning(title="Not a supported game", message="This is not a supported game!\n\n"+filename)
+
+def start_translation():
+    global start_translation_thread
+    start_translation_thread = threading.Thread(target=translate)
+    start_translation_thread.daemon = True
+    start_translation_thread.start()
 
 # buttons
 browseButton = Button(root, text="Browse", background=enabledButtonColor, foreground="white", disabledforeground="white", command=browse_game)
@@ -105,7 +117,7 @@ browseButton.grid(column=0, row=20, columnspan=2, sticky='nesw')
 margin1 = Frame(root, height=5)
 margin1.grid(column=0, row=21, columnspan=2, sticky='nesw')
 
-startButton = Button(root, text="Start", background=enabledButtonColor, foreground="white", disabledforeground="white", command=start_translation)
+startButton = Button(root, text="Start", background=enabledButtonColor, foreground="white", disabledforeground="white", command=lambda:start_translation())
 startButton.grid(column=0, row=22, columnspan=2, sticky='nesw')
 
 toggle_button_state(startButton, "disabled")
