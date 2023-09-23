@@ -165,7 +165,7 @@ def clear_temp_rpyc_decompilers(dirname, bat_path):
         remove(unrpyc_pyo)
 
 def translate(renpyFrame: RenpyFrame):
-    skip_rpa = True
+    skip_rpa = False
     skip_rpyc = False
     print(renpyFrame.filename+ " will be translated to "+renpyFrame.languageName+"! Lock localization: "+ str(renpyFrame.lockLocalization))
     dirname = path.dirname(renpyFrame.filename)
