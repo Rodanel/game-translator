@@ -98,6 +98,7 @@ def translate():
         try:
             toggle_button_state(startButton, "disabled")
             renpy.translate(renpyFrame)
+            toggle_button_state(startButton, "normal")
         except Exception as e:
             messagebox.showerror(title="Error", message=str(e))
             toggle_button_state(startButton, "normal")
