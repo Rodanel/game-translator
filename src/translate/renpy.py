@@ -133,9 +133,39 @@ class RenpyFrame(object):
         self = None
 
 
+def clear_temp_rpyc_decompilers(dirname, bat_path):
+    if path.exists(bat_path):
+        remove(bat_path)
+    decompiler_path = path.join(dirname, "decompiler")
+    if path.exists(decompiler_path):
+        for decompiler_file in listdir(decompiler_path):
+            remove(path.join(decompiler_path, decompiler_file))
+    if path.exists(decompiler_path):
+        rmdir(decompiler_path)
+    _decomp_cab = path.join(dirname, "_decomp.cab")
+    if path.exists(_decomp_cab):
+        remove(_decomp_cab)
+    _decomp_cab_tmp = path.join(dirname, "_decomp.cab.tmp")
+    if path.exists(_decomp_cab_tmp):
+        remove(_decomp_cab_tmp)
+    deobfuscate_py = path.join(dirname, "deobfuscate.py")
+    if path.exists(deobfuscate_py):
+        remove(deobfuscate_py)
+    deobfuscate_pyo = path.join(dirname, "deobfuscate.pyo")
+    if path.exists(deobfuscate_pyo):
+        remove(deobfuscate_pyo)
+    unren_log = path.join(dirname, "unren.log")
+    if path.exists(unren_log):
+        remove(unren_log)
+    unrpyc_py = path.join(dirname, "unrpyc.py")
+    if path.exists(unrpyc_py):
+        remove(unrpyc_py)
+    unrpyc_pyo = path.join(dirname, "unrpyc.pyo")
+    if path.exists(unrpyc_pyo):
+        remove(unrpyc_pyo)
 
 def translate(renpyFrame: RenpyFrame):
-    skip_rpa = False
+    skip_rpa = True
     skip_rpyc = False
     print(renpyFrame.filename+ " will be translated to "+renpyFrame.languageName+"! Lock localization: "+ str(renpyFrame.lockLocalization))
     dirname = path.dirname(renpyFrame.filename)
@@ -159,47 +189,39 @@ def translate(renpyFrame: RenpyFrame):
                         break
         if not exception_occurred and not skip_rpyc:
             try:
-                renpyFrame.progress = "Starting decompiling rpyc files."
-                bat_path = path.join(dirname, "unrent.bat")
-                if path.exists(bat_path):
-                    remove(bat_path)
+                renpyFrame.progress = "Starting decompiling rpyc files..."
+                bat_path = path.join(dirname, "unren.bat")
+                clear_temp_rpyc_decompilers(dirname, bat_path)
                 f = open(bat_path, "x")
                 f.write(unren_content)
                 f.close()
                 spRpyc = subprocess.Popen(bat_path, cwd=dirname, stdout=subprocess.PIPE, bufsize=1)
+                counter = 0
                 while True:
                     line = spRpyc.stdout.readline()
-                    renpyFrame.progress = line
+                    counter += 1
+                    if str(line).startswith("b'"):
+                        line = str(line)[2:]
+                    if str(line).startswith("b\""):
+                        line = str(line)[1:]
+                    if str(line).startswith("\\x0c "):
+                        line = str(line)[5:]
+                    if str(line).startswith("\\x0c"):
+                        line = str(line)[4:]
+                    if str(line).endswith("\\r\\n'"):
+                        line = str(line)[:-5]
+                    if str(line).endswith("'\\n\""):
+                        line = str(line)[:-4] + "\""
+                    if str(line).endswith("\\n'"):
+                        line = str(line)[:-3]
+                    if counter < 5:
+                        renpyFrame.progress = renpyFrame.progress+"\n"+str(line)
+                    else:
+                        renpyFrame.progress = line
+                        counter = 0
                     if not line: break
                 renpyFrame.progress = "Decompiling rpyc files completed. Removing temp files."
-                if path.exists(bat_path):
-                    remove(bat_path)
-                decompiler_path = path.join(dirname, "decompiler")
-                for decompiler_file in listdir(decompiler_path):
-                    remove(path.join(decompiler_path, decompiler_file))
-                if path.exists(decompiler_path):
-                    rmdir(decompiler_path)
-                _decomp_cab = path.join(dirname, "_decomp.cab")
-                if path.exists(_decomp_cab):
-                    remove(_decomp_cab)
-                _decomp_cab_tmp = path.join(dirname, "_decomp.cab.tmp")
-                if path.exists(_decomp_cab_tmp):
-                    remove(_decomp_cab_tmp)
-                deobfuscate_py = path.join(dirname, "deobfuscate.py")
-                if path.exists(deobfuscate_py):
-                    remove(deobfuscate_py)
-                deobfuscate_pyo = path.join(dirname, "deobfuscate.pyo")
-                if path.exists(deobfuscate_pyo):
-                    remove(deobfuscate_pyo)
-                unren_log = path.join(dirname, "unren.log")
-                if path.exists(unren_log):
-                    remove(unren_log)
-                unrpyc_py = path.join(dirname, "unrpyc.py")
-                if path.exists(unrpyc_py):
-                    remove(unrpyc_py)
-                unrpyc_pyo = path.join(dirname, "unrpyc.pyo")
-                if path.exists(unrpyc_pyo):
-                    remove(unrpyc_pyo)
+                clear_temp_rpyc_decompilers(dirname, bat_path)
                 time.sleep(3)
                 renpyFrame.progress = "Decompiling completed!"
             except Exception as e:
