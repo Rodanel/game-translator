@@ -18,9 +18,10 @@ class RenpyFrame(object):
         self.__frame__ = None
         self.__filename__ = filename
         self.__frame__ = set_frame_attrs(self.__frame__, root)
-        self.__titleLabel__ = Label(self.__frame__, text="Renpy Game Translation")
+        wrap_length = 500
+        self.__titleLabel__ = Label(self.__frame__, text="Renpy Game Translation", wraplength=wrap_length)
         self.__titleLabel__.pack(side="top", fill="x", anchor="n")
-        self.__gamePathLabel__ = Label(self.__frame__, text="Game: "+self.__filename__)
+        self.__gamePathLabel__ = Label(self.__frame__, text="Game: "+self.__filename__, wraplength=wrap_length)
         self.__gamePathLabel__.pack(side="top", fill="x", anchor="n")
         self.__languageFrame__ = Frame(self.__frame__)
         self.__languageFrame__.pack(side="top", fill="x", anchor="n")
@@ -30,7 +31,7 @@ class RenpyFrame(object):
         self.__languageEntry__ = Entry(self.__languageFrame__, textvariable=self.__languageName__)
         self.__languageEntry__.pack(side="right", fill="x", expand=True)
         self.__lockLocalization__ = BooleanVar()
-        self.__lockLocalizationCheck__ = Checkbutton(self.__frame__, text= "Lock translation. (Locks the game to this language. No need to update screens.rpy\nfile for adding language options if checked.)", variable=self.__lockLocalization__, onvalue=True, offvalue=False)
+        self.__lockLocalizationCheck__ = Checkbutton(self.__frame__, text= "Lock translation. (Locks the game to this language. No need to update screens.rpy file for adding language options if checked.)", variable=self.__lockLocalization__, onvalue=True, offvalue=False, wraplength=wrap_length)
         self.__lockLocalizationCheck__.pack(side="top", fill="x", anchor="n")
         self.__extractRpaArchives__ = BooleanVar()
         self.__extractRpaArchivesCheck__ = Checkbutton(self.__frame__, text= "Extract RPA archives.", variable=self.__extractRpaArchives__, onvalue=True, offvalue=False)
