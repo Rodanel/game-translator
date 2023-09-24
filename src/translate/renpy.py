@@ -140,25 +140,21 @@ def translate(renpyFrame: RenpyFrame):
                     if not line:
                         break
                     else:
-                        if str(line).startswith("b'"):
-                            line = str(line)[2:]
-                        if str(line).startswith("b\""):
-                            line = str(line)[1:]
-                        if str(line).startswith("\\x0c "):
-                            line = str(line)[5:]
-                        if str(line).startswith("\\x0c"):
-                            line = str(line)[4:]
-                        if str(line).endswith("\\r\\n'"):
-                            line = str(line)[:-5]
-                        if str(line).endswith("'\\n\""):
-                            line = str(line)[:-4] + "\""
-                        if str(line).endswith("\\n'"):
-                            line = str(line)[:-3]
-                        renpyFrame.progress = str(line)
+                        line = str(line)
+                        if line.startswith("b'") or line.startswith("b\""):
+                            line = line[2:]
+                        if line.startswith("\\x0c  "):
+                            line = line[6:]
+                        if line.endswith("\\r\\n'") or line.endswith("\\r\\n\""):
+                            line = line[:-5]
+                        elif line.endswith("\\n\"") or line.endswith("\\n'"):
+                            line = line[:-3]
+                        line = line.replace("\\\\", "\\")
+                        renpyFrame.progress = line
                 renpyFrame.progress = "Decompiling rpyc files completed. Removing temp files."
                 clear_temp_rpyc_decompilers(dirname, bat_path)
                 time.sleep(3)
-                renpyFrame.progress = "Decompiling completed!"
+                renpyFrame.progress = "Temp files remove successfully!"
             except Exception as e:
                 exception_occurred = True
                 error_text = "Could not decompile rpyc files.\n\nError: "+str(e)
