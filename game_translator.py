@@ -46,23 +46,32 @@ filename = StringVar()
 gameType = GameType.EMPTY
 
 # find current frame
+def destroyEmptyFrame():
+    global emptyFrame
+    if emptyFrame is not None:
+        emptyFrame.pack_forget()
+        emptyFrame.destroy()
+        emptyFrame = None
+def destroyRenpyFrame():
+    global renpyFrame
+    if renpyFrame is not None:
+        renpyFrame.destroy()
+        renpyFrame = None
 def showFrame():
-    global gameType, filename, emptyFrame, emptyLabel, renpyFrame
+    global gameType, filename, emptyFrame, renpyFrame
     print(str(gameType))
     if gameType == GameType.NONE or gameType == GameType.EMPTY:
+        destroyEmptyFrame()
         emptyFrame = set_frame_attrs(emptyFrame, root)
         emptyLabel = Label(emptyFrame, text="Click \"Browse\" for selecting a game")
         emptyLabel.pack(side= TOP, fill=X, expand=True, anchor=("center"))
     else:
-        if emptyFrame is not None:
-            emptyFrame.pack_forget()
-            emptyFrame.destroy()
-        emptyFrame = None
+        destroyEmptyFrame()
     if gameType == GameType.RENPY:
+        destroyRenpyFrame()
         renpyFrame = renpy.RenpyFrame(root, filename)
     else:
-        if renpyFrame is not None:
-            renpyFrame.destroy()
+        destroyRenpyFrame()
 showFrame()
 
 # select game excutable
