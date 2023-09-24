@@ -2,6 +2,7 @@ from os import path, listdir, remove, rmdir
 import re
 import subprocess
 import time
+from datetime import datetime
 
 from tkinter import Tk, StringVar, BooleanVar, Frame, Label, Entry, Checkbutton, messagebox, scrolledtext, END, WORD
 
@@ -130,9 +131,10 @@ def translate(renpyFrame: RenpyFrame):
                 if fname.endswith(".rpa"):
                     #renpyFrame.start_loading()
                     try:
-                        renpyFrame.progress = "Exracting "+fname+"..."
+                        renpyFrame.progress = "Extracting "+fname+"..."
                         print("Exracting "+fname+"...")
                         RpaEditor(fullpath, _extract=True, _version=2)
+                        renpyFrame.progress = "Extracted "+fname+" successfully!"
                     except Exception as e:
                         exception_occurred = True
                         error_text = "Could not extract \""+fname+"\" archive.\n\nError: "+str(e)
@@ -147,9 +149,9 @@ def translate(renpyFrame: RenpyFrame):
                     renpyFrame.progress = "Starting decompiling rpyc files..."
                     bat_path = path.join(dirname, "unren.bat")
                     clear_temp_rpyc_decompilers(dirname, bat_path)
-                    f = open(bat_path, "x")
-                    f.write(unren_content)
-                    f.close()
+                    unren_bat_file = open(bat_path, "x")
+                    unren_bat_file.write(unren_content)
+                    unren_bat_file.close()
                     CREATE_NO_WINDOW = 0x08000000
                     spRpyc = subprocess.Popen(bat_path, cwd=dirname, stdout=subprocess.PIPE, bufsize=1, creationflags=CREATE_NO_WINDOW)
                     while True:
@@ -180,6 +182,12 @@ def translate(renpyFrame: RenpyFrame):
             else:
                 renpyFrame.progress = "Decompiling rpyc files skipped."
         #renpyFrame.stop_loading()
+        now = datetime.now()
+        log_file_path = path.join(dirname, "game_translator-log-"+now.strftime("%m-%d-%Y, %H-%M-%S")+".txt")
+        log_file = open(log_file_path, "x")
+        log_file.write("Game Translator by Rodanel Logs\nDate: "+now.strftime("%m/%d/%Y, %H:%M:%S")+"\n\n"+renpyFrame.progress)
+        log_file.close()
+        renpyFrame.progress = "\nYou can find this log file in "+log_file_path+" later."
     else:
         renpyFrame.progress = "Language name should be contain only english lowercase characters."
     return
