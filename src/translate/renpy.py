@@ -31,6 +31,14 @@ class RenpyFrame(object):
         self.__lockLocalization__ = BooleanVar()
         self.__lockLocalizationCheck__ = Checkbutton(self.__frame__, text= "Lock translation. (Locks the game to this language. No need to update screens.rpy\nfile for adding language options if checked.)", variable=self.__lockLocalization__, onvalue=True, offvalue=False)
         self.__lockLocalizationCheck__.pack(side="top", fill="x", anchor="n")
+        self.__extractRpaArchives__ = BooleanVar()
+        self.__extractRpaArchivesCheck__ = Checkbutton(self.__frame__, text= "Extract RPA archives.", variable=self.__extractRpaArchives__, onvalue=True, offvalue=False)
+        self.__extractRpaArchivesCheck__.pack(side="top", fill="x", anchor="n")
+        self.__extractRpaArchivesCheck__.select()
+        self.__decompileRpycFiles__ = BooleanVar()
+        self.__decompileRpycFilesCheck__ = Checkbutton(self.__frame__, text= "Decompile RPYC files.", variable=self.__decompileRpycFiles__, onvalue=True, offvalue=False)
+        self.__decompileRpycFilesCheck__.pack(side="top", fill="x", anchor="n")
+        self.__decompileRpycFilesCheck__.select()
         
         self.__progressText__ = scrolledtext.ScrolledText(self.__frame__, wrap=WORD, state="disabled")
         self.__progressText__.pack(side="top", fill="both", expand=True)
@@ -45,6 +53,12 @@ class RenpyFrame(object):
     @property
     def languageName(self) -> str:
         return self.__languageName__.get()
+    @property
+    def extractRpaArchives(self) -> bool:
+        return self.__extractRpaArchives__.get()
+    @property
+    def decompileRpycFiles(self) -> bool:
+        return self.__decompileRpycFiles__.get()
     @property
     def lockLocalization(self) -> bool:
         return self.__lockLocalization__.get()
@@ -110,7 +124,7 @@ def translate(renpyFrame: RenpyFrame):
         renpyFrame.clearProgress()
         gamedir = path.join(dirname, "game")
         exception_occurred = False
-        if not skip_rpa:
+        if renpyFrame.extractRpaArchives:
             for fname in listdir(gamedir):
                 fullpath = path.join(gamedir, fname)
                 if fname.endswith(".rpa"):
@@ -125,41 +139,46 @@ def translate(renpyFrame: RenpyFrame):
                         renpyFrame.progress = error_text
                         messagebox.showerror("Could not extract archive", message=error_text)                    
                         break
-        if not exception_occurred and not skip_rpyc:
-            try:
-                renpyFrame.progress = "Starting decompiling rpyc files..."
-                bat_path = path.join(dirname, "unren.bat")
-                clear_temp_rpyc_decompilers(dirname, bat_path)
-                f = open(bat_path, "x")
-                f.write(unren_content)
-                f.close()
-                CREATE_NO_WINDOW = 0x08000000
-                spRpyc = subprocess.Popen(bat_path, cwd=dirname, stdout=subprocess.PIPE, bufsize=1, creationflags=CREATE_NO_WINDOW)
-                while True:
-                    line = spRpyc.stdout.readline()
-                    if not line:
-                        break
-                    else:
-                        line = str(line)
-                        if line.startswith("b'") or line.startswith("b\""):
-                            line = line[2:]
-                        if line.startswith("\\x0c  "):
-                            line = line[6:]
-                        if line.endswith("\\r\\n'") or line.endswith("\\r\\n\""):
-                            line = line[:-5]
-                        elif line.endswith("\\n\"") or line.endswith("\\n'"):
-                            line = line[:-3]
-                        line = line.replace("\\\\", "\\")
-                        renpyFrame.progress = line
-                renpyFrame.progress = "Decompiling rpyc files completed. Removing temp files."
-                clear_temp_rpyc_decompilers(dirname, bat_path)
-                time.sleep(3)
-                renpyFrame.progress = "Temp files remove successfully!"
-            except Exception as e:
-                exception_occurred = True
-                error_text = "Could not decompile rpyc files.\n\nError: "+str(e)
-                renpyFrame.progress = error_text
-                messagebox.showerror("Could not decompile", message=error_text)
+        else:
+            renpyFrame.progress = "Extracting rpa archives skipped."
+        if not exception_occurred:
+            if renpyFrame.decompileRpycFiles:
+                try:
+                    renpyFrame.progress = "Starting decompiling rpyc files..."
+                    bat_path = path.join(dirname, "unren.bat")
+                    clear_temp_rpyc_decompilers(dirname, bat_path)
+                    f = open(bat_path, "x")
+                    f.write(unren_content)
+                    f.close()
+                    CREATE_NO_WINDOW = 0x08000000
+                    spRpyc = subprocess.Popen(bat_path, cwd=dirname, stdout=subprocess.PIPE, bufsize=1, creationflags=CREATE_NO_WINDOW)
+                    while True:
+                        line = spRpyc.stdout.readline()
+                        if not line:
+                            break
+                        else:
+                            line = str(line)
+                            if line.startswith("b'") or line.startswith("b\""):
+                                line = line[2:]
+                            if line.startswith("\\x0c  "):
+                                line = line[6:]
+                            if line.endswith("\\r\\n'") or line.endswith("\\r\\n\""):
+                                line = line[:-5]
+                            elif line.endswith("\\n\"") or line.endswith("\\n'"):
+                                line = line[:-3]
+                            line = line.replace("\\\\", "\\")
+                            renpyFrame.progress = line
+                    renpyFrame.progress = "Decompiling rpyc files completed. Removing temp files."
+                    clear_temp_rpyc_decompilers(dirname, bat_path)
+                    time.sleep(3)
+                    renpyFrame.progress = "Temp files remove successfully!"
+                except Exception as e:
+                    exception_occurred = True
+                    error_text = "Could not decompile rpyc files.\n\nError: "+str(e)
+                    renpyFrame.progress = error_text
+                    messagebox.showerror("Could not decompile", message=error_text)
+            else:
+                renpyFrame.progress = "Decompiling rpyc files skipped."
         #renpyFrame.stop_loading()
     else:
         renpyFrame.progress = "Language name should be contain only english lowercase characters."
