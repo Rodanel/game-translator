@@ -34,15 +34,6 @@ root.minsize(window_width, window_height)
 # set icon
 # root.iconbitmap('./assets/icon.ico')
 
-root.grid_columnconfigure(1, weight= 1)
-root.grid_rowconfigure(0, weight= 1)
-
-mainFrame = Frame(root)
-mainFrame.grid(column=0, row=0, sticky='nesw')
-
-placeholderFrame = Frame(root)
-placeholderFrame.grid(column=0, row=1)
-
 # empty panel
 emptyFrame = None
 emptyLabel = None
@@ -59,18 +50,16 @@ def showFrame():
     global gameType, filename, emptyFrame, emptyLabel, renpyFrame
     print(str(gameType))
     if gameType == GameType.NONE or gameType == GameType.EMPTY:
-        set_frame_attrs(emptyFrame, mainFrame)
+        emptyFrame = set_frame_attrs(emptyFrame, root)
         emptyLabel = Label(emptyFrame, text="Click \"Browse\" for selecting a game")
-        emptyLabel.grid(column=1, row=0, columnspan=2, sticky="nesw")
+        emptyLabel.pack(side= TOP, fill=X, expand=True, anchor=("center"))
     else:
-        if emptyLabel is not None:
-            emptyLabel.destroy()
-        emptyLabel = None
         if emptyFrame is not None:
+            emptyFrame.pack_forget()
             emptyFrame.destroy()
         emptyFrame = None
     if gameType == GameType.RENPY:
-        renpyFrame = renpy.RenpyFrame(root, mainFrame, filename)
+        renpyFrame = renpy.RenpyFrame(root, filename)
     else:
         if renpyFrame is not None:
             renpyFrame.destroy()
@@ -112,14 +101,15 @@ def start_translation():
     start_translation_thread.start()
 
 # buttons
-browseButton = Button(root, text="Browse", background=enabledButtonColor, foreground="white", disabledforeground="white", command=browse_game)
-browseButton.grid(column=0, row=20, columnspan=2, sticky='nesw')
-
-margin1 = Frame(root, height=5)
-margin1.grid(column=0, row=21, columnspan=2, sticky='nesw')
 
 startButton = Button(root, text="Start", background=enabledButtonColor, foreground="white", disabledforeground="white", command=lambda:start_translation())
-startButton.grid(column=0, row=22, columnspan=2, sticky='nesw')
+startButton.pack(side=BOTTOM, fill=X)
+
+margin1 = Frame(root, height=5)
+margin1.pack(side=BOTTOM, fill=X)
+
+browseButton = Button(root, text="Browse", background=enabledButtonColor, foreground="white", disabledforeground="white", command=browse_game)
+browseButton.pack(side=BOTTOM, fill=X)
 
 toggle_button_state(startButton, "disabled")
 

@@ -12,28 +12,30 @@ from src.style.frame import set_frame_attrs
 # renpy panel object
 class RenpyFrame(object):
 
-    def __init__(self, root: Tk, mainFrame: Frame, filename:str):
+    def __init__(self, root: Tk, filename:str):
         self.__root__ = root
         self.__frame__ = None
         self.__filename__ = filename
-        self.__frame__ = set_frame_attrs(self.__frame__, mainFrame)
+        self.__frame__ = set_frame_attrs(self.__frame__, root)
         self.__titleLabel__ = Label(self.__frame__, text="Renpy Game Translation")
-        self.__titleLabel__.grid(column=0, row=0, columnspan=2, sticky='new')
+        self.__titleLabel__.pack(side="top", fill="x", anchor="n")
         self.__gamePathLabel__ = Label(self.__frame__, text="Game: "+self.__filename__)
-        self.__gamePathLabel__.grid(column=0, row=1, columnspan=2, sticky='new')
-        self.__languageLabel__ = Label(self.__frame__, text="Language (only english characters):")
-        self.__languageLabel__.grid(column=0, row=2, sticky='nw')
+        self.__gamePathLabel__.pack(side="top", fill="x", anchor="n")
+        self.__languageFrame__ = Frame(self.__frame__)
+        self.__languageFrame__.pack(side="top", fill="x", anchor="n")
+        self.__languageLabel__ = Label(self.__languageFrame__, text="Language (only english characters):")
+        self.__languageLabel__.pack(side="left")
         self.__languageName__ = StringVar()
-        self.__languageEntry__ = Entry(self.__frame__, textvariable=self.__languageName__)
-        self.__languageEntry__.grid(column=1, row=2, sticky='new')
+        self.__languageEntry__ = Entry(self.__languageFrame__, textvariable=self.__languageName__)
+        self.__languageEntry__.pack(side="right", fill="x", expand=True)
         self.__lockLocalization__ = BooleanVar()
         self.__lockLocalizationCheck__ = Checkbutton(self.__frame__, text= "Lock translation. (Locks the game to this language. No need to update screens.rpy\nfile for adding language options if checked.)", variable=self.__lockLocalization__, onvalue=True, offvalue=False)
-        self.__lockLocalizationCheck__.grid(column=0, row=3, columnspan=2, sticky="new")
+        self.__lockLocalizationCheck__.pack(side="top", fill="x", anchor="n")
         
         self.__timer_id__ = None
         self.__progress__ = StringVar()
         self.__progressLabel__ = Label(self.__frame__, textvariable=self.__progress__, wraplength=450)
-        self.__progressLabel__.grid(column=0, row=4, columnspan=2, sticky='new')
+        self.__progressLabel__.pack(side="top", fill="both", expand=True)
 
     def start_loading(self, n=0):
         if self.progress.endswith("..."):
@@ -52,84 +54,31 @@ class RenpyFrame(object):
     def root(self) -> Tk:
         return self.__root__
     @property
-    def frame(self) -> Frame:
-        return self.__frame__
-    @property
     def filename(self) -> str:
         return self.__filename__
-    @property
-    def titleLabel(self) -> Label:
-        return self.__titleLabel__
-    @titleLabel.setter
-    def titleLabel(self, value: Label):
-        self.__titleLabel__ = value
-    @property
-    def gamePathLabel(self) -> Label:
-        return self.__gamePathLabel__
-    @gamePathLabel.setter
-    def gamePathLabel(self, value: Label):
-        self.__gamePathLabel__ = value
-    @property
-    def languageLabel(self) -> Label:
-        return self.__languageLabel__
-    @languageLabel.setter
-    def languageLabel(self, value: Label):
-        self.__languageLabel__ = value
     @property
     def languageName(self) -> str:
         return self.__languageName__.get()
     @property
-    def languageEntry(self) -> Entry:
-        return self.__languageEntry__
-    @languageEntry.setter
-    def languageEntry(self, value: Entry):
-        self.__languageEntry__ = value
-    @property
     def lockLocalization(self) -> bool:
         return self.__lockLocalization__.get()
-    @property
-    def lockLocalizationCheck(self) -> Checkbutton:
-        return self.__lockLocalizationCheck__
-    @lockLocalizationCheck.setter
-    def lockLocalizationCheck(self, value: Checkbutton):
-        self.__lockLocalizationCheck__ = value
     def progressDefault(self):
-        self.progressLabel["foreground"] = "black"
+        self.__progressLabel__["foreground"] = "black"
     def progressRed(self):
-        self.progressLabel["foreground"] = "red"
+        self.__progressLabel__["foreground"] = "red"
     @property
     def progress(self) -> str:
         return self.__progress__.get()
     @progress.setter
     def progress(self, value: str):
         return self.__progress__.set(value)
-    @property
-    def progressLabel(self) -> Label:
-        return self.__progressLabel__
-    @progressLabel.setter
-    def progressLabel(self, value: Label):
-        self.__progressLabel__ = value
 
     # hide renpy panel    
     def destroy(self):
-        if self.titleLabel is not None:
-            self.titleLabel.destroy()
-        self.titleLabel = None
-        if self.gamePathLabel is not None:
-            self.gamePathLabel.destroy()
-        self.gamePathLabel = None
-        if self.languageLabel is not None:
-            self.languageLabel.destroy()
-        self.languageLabel = None
-        if self.languageEntry is not None:
-            self.languageEntry.destroy()
-        self.languageEntry = None
-        if self.lockLocalizationCheck is not None:
-            self.lockLocalizationCheck.destroy()
-        self.lockLocalizationCheck = None
-        if self.frame is not None:
-            self.frame.destroy()
-        self.frame = None
+        if self.__frame__ is not None:
+            self.__frame__.pack_forget()
+            self.__frame__.destroy()
+        self.__frame__ = None
         self = None
 
 
