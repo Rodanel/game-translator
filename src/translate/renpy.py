@@ -3,7 +3,7 @@ import re
 import subprocess
 import time
 
-from tkinter import Tk, StringVar, BooleanVar, Frame, Label, Entry, Checkbutton, messagebox
+from tkinter import Tk, StringVar, BooleanVar, Frame, Label, Entry, Checkbutton, messagebox, scrolledtext, END, WORD
 
 from src.tools.rpa import RpaEditor
 from src.tools.unren import unren_content
@@ -32,22 +32,8 @@ class RenpyFrame(object):
         self.__lockLocalizationCheck__ = Checkbutton(self.__frame__, text= "Lock translation. (Locks the game to this language. No need to update screens.rpy\nfile for adding language options if checked.)", variable=self.__lockLocalization__, onvalue=True, offvalue=False)
         self.__lockLocalizationCheck__.pack(side="top", fill="x", anchor="n")
         
-        self.__timer_id__ = None
-        self.__progress__ = StringVar()
-        self.__progressLabel__ = Label(self.__frame__, textvariable=self.__progress__, wraplength=450)
-        self.__progressLabel__.pack(side="top", fill="both", expand=True)
-
-    def start_loading(self, n=0):
-        if self.progress.endswith("..."):
-            self.progress = self.progress[:-2]
-        elif self.progress.endswith(".."):
-            self.progress = self.progress + "."
-        elif self.progress.endswith("."):
-            self.progress = self.progress + "."
-        self.__timer_id__ = self.frame.after(500, self.start_loading, n+1)
-    def stop_loading(self):
-        if self.__timer_id__:
-            self.frame.after_cancel(self.__timer_id__)
+        self.__progressText__ = scrolledtext.ScrolledText(self.__frame__, wrap=WORD, state="disabled")
+        self.__progressText__.pack(side="top", fill="both", expand=True)
 
     # element properties
     @property
@@ -62,17 +48,19 @@ class RenpyFrame(object):
     @property
     def lockLocalization(self) -> bool:
         return self.__lockLocalization__.get()
-    def progressDefault(self):
-        self.__progressLabel__["foreground"] = "black"
-    def progressRed(self):
-        self.__progressLabel__["foreground"] = "red"
     @property
     def progress(self) -> str:
-        return self.__progress__.get()
+        return self.__progressText__.get(1.0, END)
     @progress.setter
     def progress(self, value: str):
-        return self.__progress__.set(value)
-
+        self.__progressText__["state"] = "normal"
+        self.__progressText__.insert(END, "\n"+value)
+        self.__progressText__.see(END)
+        self.__progressText__["state"] = "disabled"
+    def clearProgress(self):
+        self.__progressText__["state"] = "normal"
+        self.__progressText__.delete(1.0, END)
+        self.__progressText__["state"] = "disabled"
     # hide renpy panel    
     def destroy(self):
         if self.__frame__ is not None:
@@ -119,22 +107,23 @@ def translate(renpyFrame: RenpyFrame):
     print(renpyFrame.filename+ " will be translated to "+renpyFrame.languageName+"! Lock localization: "+ str(renpyFrame.lockLocalization))
     dirname = path.dirname(renpyFrame.filename)
     if len(renpyFrame.languageName) > 0 and re.match('^[abcdefghijklmnoprqstuwvyzx]+$',renpyFrame.languageName):
-        renpyFrame.progressDefault()
+        renpyFrame.clearProgress()
         gamedir = path.join(dirname, "game")
         exception_occurred = False
         if not skip_rpa:
             for fname in listdir(gamedir):
                 fullpath = path.join(gamedir, fname)
                 if fname.endswith(".rpa"):
-                    renpyFrame.start_loading()
+                    #renpyFrame.start_loading()
                     try:
                         renpyFrame.progress = "Exracting "+fname+"..."
                         print("Exracting "+fname+"...")
                         RpaEditor(fullpath, _extract=True, _version=2)
                     except Exception as e:
-                        renpyFrame.progress = ""
                         exception_occurred = True
-                        messagebox.showerror("Could not extract archive", message="Could not extract \""+fname+"\" archive.\n\nError: "+str(e))                    
+                        error_text = "Could not extract \""+fname+"\" archive.\n\nError: "+str(e)
+                        renpyFrame.progress = error_text
+                        messagebox.showerror("Could not extract archive", message=error_text)                    
                         break
         if not exception_occurred and not skip_rpyc:
             try:
@@ -146,40 +135,36 @@ def translate(renpyFrame: RenpyFrame):
                 f.close()
                 CREATE_NO_WINDOW = 0x08000000
                 spRpyc = subprocess.Popen(bat_path, cwd=dirname, stdout=subprocess.PIPE, bufsize=1, creationflags=CREATE_NO_WINDOW)
-                counter = 0
                 while True:
                     line = spRpyc.stdout.readline()
-                    counter += 1
-                    if str(line).startswith("b'"):
-                        line = str(line)[2:]
-                    if str(line).startswith("b\""):
-                        line = str(line)[1:]
-                    if str(line).startswith("\\x0c "):
-                        line = str(line)[5:]
-                    if str(line).startswith("\\x0c"):
-                        line = str(line)[4:]
-                    if str(line).endswith("\\r\\n'"):
-                        line = str(line)[:-5]
-                    if str(line).endswith("'\\n\""):
-                        line = str(line)[:-4] + "\""
-                    if str(line).endswith("\\n'"):
-                        line = str(line)[:-3]
-                    if counter < 5:
-                        renpyFrame.progress = renpyFrame.progress+"\n"+str(line)
+                    if not line:
+                        break
                     else:
-                        renpyFrame.progress = line
-                        counter = 0
-                    if not line: break
+                        if str(line).startswith("b'"):
+                            line = str(line)[2:]
+                        if str(line).startswith("b\""):
+                            line = str(line)[1:]
+                        if str(line).startswith("\\x0c "):
+                            line = str(line)[5:]
+                        if str(line).startswith("\\x0c"):
+                            line = str(line)[4:]
+                        if str(line).endswith("\\r\\n'"):
+                            line = str(line)[:-5]
+                        if str(line).endswith("'\\n\""):
+                            line = str(line)[:-4] + "\""
+                        if str(line).endswith("\\n'"):
+                            line = str(line)[:-3]
+                        renpyFrame.progress = str(line)
                 renpyFrame.progress = "Decompiling rpyc files completed. Removing temp files."
                 clear_temp_rpyc_decompilers(dirname, bat_path)
                 time.sleep(3)
                 renpyFrame.progress = "Decompiling completed!"
             except Exception as e:
-                renpyFrame.progress = ""
                 exception_occurred = True
-                messagebox.showerror("Could not decompile", message="Could not decompile rpyc files.\n\nError: "+str(e))
-        renpyFrame.stop_loading()
+                error_text = "Could not decompile rpyc files.\n\nError: "+str(e)
+                renpyFrame.progress = error_text
+                messagebox.showerror("Could not decompile", message=error_text)
+        #renpyFrame.stop_loading()
     else:
-        renpyFrame.progressRed()
         renpyFrame.progress = "Language name should be contain only english lowercase characters."
     return
