@@ -160,14 +160,14 @@ def translate(renpyFrame: RenpyFrame):
                             line = str(line)
                             if line.startswith("b'") or line.startswith("b\""):
                                 line = line[2:]
-                            if line.startswith("\\x0c  "):
-                                line = line[6:]
+                            if line.startswith("\\x0c"):
+                                line = line[4:]
                             if line.endswith("\\r\\n'") or line.endswith("\\r\\n\""):
                                 line = line[:-5]
                             elif line.endswith("\\n\"") or line.endswith("\\n'"):
                                 line = line[:-3]
                             line = line.replace("\\\\", "\\")
-                            renpyFrame.progress = line
+                            renpyFrame.progress = line.strip()
                     renpyFrame.progress = "Decompiling rpyc files completed. Removing temp files."
                     clear_temp_rpyc_decompilers(dirname, bat_path)
                     time.sleep(3)
