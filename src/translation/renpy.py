@@ -23,17 +23,28 @@ class RenpyFrame(object):
         self.__filename__ = filename
         self.__frame__ = set_frame_attrs(self.__frame__, root)
         wrap_length = 500
+        tb_width = 40
         self.__titleLabel__ = Label(self.__frame__, text="Renpy Game Translation", wraplength=wrap_length)
         self.__titleLabel__.pack(side="top", fill="x", anchor="n")
         self.__gamePathLabel__ = Label(self.__frame__, text="Game: "+self.__filename__, wraplength=wrap_length)
         self.__gamePathLabel__.pack(side="top", fill="x", anchor="n")
-        self.__languageFrame__ = Frame(self.__frame__)
-        self.__languageFrame__.pack(side="top", fill="x", anchor="n")
-        self.__languageLabel__ = Label(self.__languageFrame__, text="Language (only english characters):")
-        self.__languageLabel__.pack(side="left")
+    
+        self.__languageNameFrame__ = Frame(self.__frame__)
+        self.__languageNameFrame__.pack(side="top", fill="x", anchor="n")
+        self.__languageNameLabel__ = Label(self.__languageNameFrame__, text="Language name:")
+        self.__languageNameLabel__.pack(side="left", anchor="e")
         self.__languageName__ = StringVar()
-        self.__languageEntry__ = Entry(self.__languageFrame__, textvariable=self.__languageName__)
-        self.__languageEntry__.pack(side="right", fill="x", expand=True)
+        self.__languageNameEntry__ = Entry(self.__languageNameFrame__, textvariable=self.__languageName__, width=tb_width)
+        self.__languageNameEntry__.pack(side="right")
+    
+        self.__languageCodeFrame__ = Frame(self.__frame__)
+        self.__languageCodeFrame__.pack(side="top", fill="x", anchor="n")
+        self.__languageCodeLabel__ = Label(self.__languageCodeFrame__, text="Language Code (only english characters):")
+        self.__languageCodeLabel__.pack(side="left", anchor="e")
+        self.__languageCode__ = StringVar()
+        self.__languageCodeEntry__ = Entry(self.__languageCodeFrame__, textvariable=self.__languageCode__, width=tb_width)
+        self.__languageCodeEntry__.pack(side="right")
+        
         self.__lockLocalization__ = BooleanVar()
         self.__lockLocalizationCheck__ = Checkbutton(self.__frame__, text= "Lock translation. (Locks the game to this language. No need to update screens.rpy file for adding language options if checked.)", variable=self.__lockLocalization__, onvalue=True, offvalue=False, wraplength=wrap_length)
         self.__lockLocalizationCheck__.pack(side="top", fill="x", anchor="n")
@@ -59,6 +70,9 @@ class RenpyFrame(object):
     @property
     def languageName(self) -> str:
         return self.__languageName__.get()
+    @property
+    def languageCode(self) -> str:
+        return self.__languageCode__.get()
     @property
     def extractRpaArchives(self) -> bool:
         return self.__extractRpaArchives__.get()
@@ -163,108 +177,123 @@ def fix_console(line):
     return line.strip()
 
 def translate(renpyFrame: RenpyFrame):
-    skip_rpa = False
-    skip_rpyc = False
-    print(renpyFrame.filename+ " will be translated to "+renpyFrame.languageName+"! Lock localization: "+ str(renpyFrame.lockLocalization))
+    print(renpyFrame.filename+ " will be translated to "+renpyFrame.languageName+" ("+renpyFrame.languageCode+")!")
     dirname = path.dirname(renpyFrame.filename)
-    if len(renpyFrame.languageName) > 0 and re.match('^[abcdefghijklmnoprqstuwvyzx]+$',renpyFrame.languageName):
-        renpyFrame.clearProgress()
-        gamedir = path.join(dirname, "game")
-        exception_occurred = False
-        if renpyFrame.extractRpaArchives:
-            for fname in listdir(gamedir):
-                fullpath = path.join(gamedir, fname)
-                if fname.endswith(".rpa"):
-                    #renpyFrame.start_loading()
+    if len(renpyFrame.languageCode) > 0 and re.match('^[abcdefghijklmnoprqstuwvyzx]+$',renpyFrame.languageCode):
+        if len(renpyFrame.languageCode) > 0:
+            renpyFrame.clearProgress()
+            gamedir = path.join(dirname, "game")
+            exception_occurred = False
+            if renpyFrame.extractRpaArchives:
+                for fname in listdir(gamedir):
+                    fullpath = path.join(gamedir, fname)
+                    if fname.endswith(".rpa"):
+                        #renpyFrame.start_loading()
+                        try:
+                            renpyFrame.progress = "Extracting "+fname+"..."
+                            print("Exracting "+fname+"...")
+                            RpaEditor(fullpath, _extract=True, _version=2)
+                            renpyFrame.progress = "Extracted "+fname+" successfully!"
+                        except Exception as e:
+                            exception_occurred = True
+                            error_text = "Could not extract \""+fname+"\" archive.\n\nError: "+str(e)
+                            renpyFrame.progress = error_text
+                            messagebox.showerror("Could not extract archive", message=error_text)                    
+                            break
+            else:
+                renpyFrame.progress = "Extracting rpa archives skipped."
+            if not exception_occurred:
+                if renpyFrame.decompileRpycFiles:
                     try:
-                        renpyFrame.progress = "Extracting "+fname+"..."
-                        print("Exracting "+fname+"...")
-                        RpaEditor(fullpath, _extract=True, _version=2)
-                        renpyFrame.progress = "Extracted "+fname+" successfully!"
+                        renpyFrame.progress = "Starting decompiling rpyc files..."
+                        bat_path = path.join(dirname, "unren.bat")
+                        clear_temp_rpyc_decompilers(dirname, bat_path)
+                        unren_bat_file = open(bat_path, "x")
+                        unren_bat_file.write(unren_content)
+                        unren_bat_file.close()
+                        spRpyc = subprocess.Popen(bat_path+ " decompile", cwd=dirname, stdout=subprocess.PIPE, bufsize=1, creationflags=CREATE_NO_WINDOW)
+                        while True:
+                            line = spRpyc.stdout.readline()
+                            if not line:
+                                break
+                            else:
+                                renpyFrame.progress = fix_console(line)
+                        renpyFrame.progress = "Decompiling rpyc files completed. Removing temp files."
+                        clear_temp_rpyc_decompilers(dirname, bat_path)
+                        time.sleep(3)
+                        renpyFrame.progress = "Temp files remove successfully!"
                     except Exception as e:
                         exception_occurred = True
-                        error_text = "Could not extract \""+fname+"\" archive.\n\nError: "+str(e)
+                        error_text = "Could not decompile rpyc files.\n\nError: "+str(e)
                         renpyFrame.progress = error_text
-                        messagebox.showerror("Could not extract archive", message=error_text)                    
-                        break
-        else:
-            renpyFrame.progress = "Extracting rpa archives skipped."
-        if not exception_occurred:
-            if renpyFrame.decompileRpycFiles:
-                try:
-                    renpyFrame.progress = "Starting decompiling rpyc files..."
-                    bat_path = path.join(dirname, "unren.bat")
-                    clear_temp_rpyc_decompilers(dirname, bat_path)
-                    unren_bat_file = open(bat_path, "x")
-                    unren_bat_file.write(unren_content)
-                    unren_bat_file.close()
-                    spRpyc = subprocess.Popen(bat_path+ " decompile", cwd=dirname, stdout=subprocess.PIPE, bufsize=1, creationflags=CREATE_NO_WINDOW)
-                    while True:
-                        line = spRpyc.stdout.readline()
-                        if not line:
-                            break
-                        else:
-                            renpyFrame.progress = fix_console(line)
-                    renpyFrame.progress = "Decompiling rpyc files completed. Removing temp files."
-                    clear_temp_rpyc_decompilers(dirname, bat_path)
-                    time.sleep(3)
-                    renpyFrame.progress = "Temp files remove successfully!"
-                except Exception as e:
-                    exception_occurred = True
-                    error_text = "Could not decompile rpyc files.\n\nError: "+str(e)
-                    renpyFrame.progress = error_text
-                    messagebox.showerror("Could not decompile", message=error_text)
-            else:
-                renpyFrame.progress = "Decompiling rpyc files skipped."
-        if not exception_occurred:
-            renpyFrame.progress = "Genarating localization files started..."
-            executable_path = path.dirname(fsdecode(renpyFrame.filename))
-            game_extension = ".exe" if renpyFrame.filename.endswith(".exe") else ""
-            executables = [ "python"+game_extension]
-            executables.append(renpyFrame.filename)
-            for i in executables:
-                executable = path.join(executable_path, i)
-                if path.exists(executable):
-                    break
-            else:
-                raise Exception("Python interpreter not found: %r", executables)
-            cmd = [ executable, "-EO", sys.argv[0] ]
-            args = [ "translate", renpyFrame.languageName ]
-            cmd.append(dirname)
-            cmd.extend(args)
-
-            environ = dict(myenv)
-            environ.update({})
-
-            encoded_environ = { }
-
-            for k, v in environ.items():
-                if v is None:
-                    continue
-
-                encoded_environ[str(k)] = str(v)
-
-            # Launch the project.
-            cmd = [ str(i) for i in cmd ]
-
-            p = subprocess.Popen(cmd, stdout=subprocess.PIPE, bufsize=1, creationflags=CREATE_NO_WINDOW,env=encoded_environ)
-            while True:
-                line = p.stdout.readline()
-                if not line:
-                    break
+                        messagebox.showerror("Could not decompile", message=error_text)
                 else:
-                    renpyFrame.progress = fix_console(line)
-            renpyFrame.progress = "Genarated localization files successfully."
-        #renpyFrame.stop_loading()
-        now = datetime.now()
-        logs_dir = path.join(dirname, "game_translator-logs")
-        if not path.isdir(logs_dir):
-            mkdir(logs_dir)
-        log_file_path = path.join(dirname, "game_translator-logs", "game_translator-log-"+now.strftime("%m-%d-%Y, %H-%M-%S")+".txt")
-        log_file = open(log_file_path, "x")
-        log_file.write("Game Translator by Rodanel Logs\nDate: "+now.strftime("%m/%d/%Y, %H:%M:%S")+"\n\n"+renpyFrame.progress)
-        log_file.close()
-        renpyFrame.progress = "\nYou can find this log file in "+log_file_path+" later."
+                    renpyFrame.progress = "Decompiling rpyc files skipped."
+            if not exception_occurred:
+                renpyFrame.progress = "Genarating localization files started..."
+                executable_path = path.dirname(fsdecode(renpyFrame.filename))
+                game_extension = ".exe" if renpyFrame.filename.endswith(".exe") else ""
+                executables = [ "python"+game_extension]
+                executables.append(renpyFrame.filename)
+                for i in executables:
+                    executable = path.join(executable_path, i)
+                    if path.exists(executable):
+                        break
+                else:
+                    raise Exception("Python interpreter not found: %r", executables)
+                cmd = [ executable, "-EO", sys.argv[0] ]
+                args = [ "translate", renpyFrame.languageCode ]
+                cmd.append(dirname)
+                cmd.extend(args)
+
+                environ = dict(myenv)
+                environ.update({})
+
+                encoded_environ = { }
+
+                for k, v in environ.items():
+                    if v is None:
+                        continue
+
+                    encoded_environ[str(k)] = str(v)
+
+                # Launch the project.
+                cmd = [ str(i) for i in cmd ]
+
+                p = subprocess.Popen(cmd, stdout=subprocess.PIPE, bufsize=1, creationflags=CREATE_NO_WINDOW,env=encoded_environ)
+                while True:
+                    line = p.stdout.readline()
+                    if not line:
+                        break
+                    else:
+                        renpyFrame.progress = fix_console(line)
+                renpyFrame.progress = "Genarated localization files successfully."
+            if renpyFrame.lockLocalization:
+                renpyFrame.progress = "Language will be locked to "+renpyFrame.languageName+" ("+renpyFrame.languageCode+") in next versions."
+            else:
+                renpyFrame.progress = "\nvbox:"
+                renpyFrame.progress = "    style_prefix \"radio\""
+                renpyFrame.progress = "    label _(\"Language\")"
+                renpyFrame.progress = "    textbutton \"English\" action Language(None)"
+                for langdir in listdir(path.join(dirname, "game", "tl")):
+                    if langdir != "None":
+                        languageNameTemp = langdir
+                        if renpyFrame.languageCode == langdir:
+                            languageNameTemp = renpyFrame.languageName
+                        renpyFrame.progress = "    textbutton \""+languageNameTemp+"\" action Language(\""+langdir+"\")"
+                renpyFrame.progress = "\nAdd this code to \"screen preferences():\" in screens.rpy. Replace English with game's orijinal language."
+            #renpyFrame.stop_loading()
+            now = datetime.now()
+            logs_dir = path.join(dirname, "game_translator-logs")
+            if not path.isdir(logs_dir):
+                mkdir(logs_dir)
+            log_file_path = path.join(dirname, "game_translator-logs", "game_translator-log-"+now.strftime("%m-%d-%Y, %H-%M-%S")+".txt")
+            log_file = open(log_file_path, "x")
+            log_file.write("Game Translator by Rodanel Logs\nDate: "+now.strftime("%m/%d/%Y, %H:%M:%S")+"\n\n"+renpyFrame.progress)
+            log_file.close()
+            renpyFrame.progress = "\nYou can find this log file in "+log_file_path+" later."
+        else:
+            renpyFrame.progress = "Language name can not be empty."
     else:
-        renpyFrame.progress = "Language name should be contain only english lowercase characters."
+        renpyFrame.progress = "Language code should be contain only english lowercase characters."
     return
