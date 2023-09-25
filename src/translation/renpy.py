@@ -12,6 +12,8 @@ from src.tools.rpa import RpaEditor
 from src.tools.unrpyc import unren_content
 from src.style.frame import set_frame_attrs
 
+CREATE_NO_WINDOW = 0x08000000
+
 # renpy panel object
 class RenpyFrame(object):
 
@@ -147,6 +149,18 @@ def fsdecode(s):
     fsencoding = sys.getfilesystemencoding() or "utf-8"
     #return s.decode(fsencoding)
     return s
+def fix_console(line):
+    line = str(line)
+    if line.startswith("b'") or line.startswith("b\""):
+        line = line[2:]
+    if line.startswith("\\x0c"):
+        line = line[4:]
+    if line.endswith("\\r\\n'") or line.endswith("\\r\\n\""):
+        line = line[:-5]
+    elif line.endswith("\\n\"") or line.endswith("\\n'"):
+        line = line[:-3]
+    line = line.replace("\\\\", "\\")
+    return line.strip()
 
 def translate(renpyFrame: RenpyFrame):
     skip_rpa = False
@@ -184,24 +198,13 @@ def translate(renpyFrame: RenpyFrame):
                     unren_bat_file = open(bat_path, "x")
                     unren_bat_file.write(unren_content)
                     unren_bat_file.close()
-                    CREATE_NO_WINDOW = 0x08000000
                     spRpyc = subprocess.Popen(bat_path+ " decompile", cwd=dirname, stdout=subprocess.PIPE, bufsize=1, creationflags=CREATE_NO_WINDOW)
                     while True:
                         line = spRpyc.stdout.readline()
                         if not line:
                             break
                         else:
-                            line = str(line)
-                            if line.startswith("b'") or line.startswith("b\""):
-                                line = line[2:]
-                            if line.startswith("\\x0c"):
-                                line = line[4:]
-                            if line.endswith("\\r\\n'") or line.endswith("\\r\\n\""):
-                                line = line[:-5]
-                            elif line.endswith("\\n\"") or line.endswith("\\n'"):
-                                line = line[:-3]
-                            line = line.replace("\\\\", "\\")
-                            renpyFrame.progress = line.strip()
+                            renpyFrame.progress = fix_console(line)
                     renpyFrame.progress = "Decompiling rpyc files completed. Removing temp files."
                     clear_temp_rpyc_decompilers(dirname, bat_path)
                     time.sleep(3)
@@ -213,6 +216,45 @@ def translate(renpyFrame: RenpyFrame):
                     messagebox.showerror("Could not decompile", message=error_text)
             else:
                 renpyFrame.progress = "Decompiling rpyc files skipped."
+        if not exception_occurred:
+            renpyFrame.progress = "Genarating localization files started..."
+            executable_path = path.dirname(fsdecode(renpyFrame.filename))
+            game_extension = ".exe" if renpyFrame.filename.endswith(".exe") else ""
+            executables = [ "python"+game_extension]
+            executables.append(renpyFrame.filename)
+            for i in executables:
+                executable = path.join(executable_path, i)
+                if path.exists(executable):
+                    break
+            else:
+                raise Exception("Python interpreter not found: %r", executables)
+            cmd = [ executable, "-EO", sys.argv[0] ]
+            args = [ "translate", renpyFrame.languageName ]
+            cmd.append(dirname)
+            cmd.extend(args)
+
+            environ = dict(myenv)
+            environ.update({})
+
+            encoded_environ = { }
+
+            for k, v in environ.items():
+                if v is None:
+                    continue
+
+                encoded_environ[str(k)] = str(v)
+
+            # Launch the project.
+            cmd = [ str(i) for i in cmd ]
+
+            p = subprocess.Popen(cmd, stdout=subprocess.PIPE, bufsize=1, creationflags=CREATE_NO_WINDOW,env=encoded_environ)
+            while True:
+                line = p.stdout.readline()
+                if not line:
+                    break
+                else:
+                    renpyFrame.progress = fix_console(line)
+            renpyFrame.progress = "Genarated localization files successfully."
         #renpyFrame.stop_loading()
         now = datetime.now()
         logs_dir = path.join(dirname, "game_translator-logs")
