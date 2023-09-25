@@ -3,11 +3,12 @@ import re
 import subprocess
 import time
 from datetime import datetime
+import sys
 
 from tkinter import Tk, StringVar, BooleanVar, Frame, Label, Entry, Checkbutton, messagebox, scrolledtext, END, WORD
 
 from src.tools.rpa import RpaEditor
-from src.tools.unren import unren_content
+from src.tools.unrpyc import unren_content
 from src.style.frame import set_frame_attrs
 
 # renpy panel object
@@ -154,7 +155,7 @@ def translate(renpyFrame: RenpyFrame):
                     unren_bat_file.write(unren_content)
                     unren_bat_file.close()
                     CREATE_NO_WINDOW = 0x08000000
-                    spRpyc = subprocess.Popen(bat_path, cwd=dirname, stdout=subprocess.PIPE, bufsize=1, creationflags=CREATE_NO_WINDOW)
+                    spRpyc = subprocess.Popen(bat_path+ " decompile", cwd=dirname, stdout=subprocess.PIPE, bufsize=1, creationflags=CREATE_NO_WINDOW)
                     while True:
                         line = spRpyc.stdout.readline()
                         if not line:

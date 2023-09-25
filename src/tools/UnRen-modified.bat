@@ -144,17 +144,6 @@ REM ----------------------------------------------------------------------------
 REM Splash screen
 REM --------------------------------------------------------------------------------
 cls
-echo.
-echo     __  __      ____               __          __
-echo    / / / /___  / __ \___  ____    / /_  ____ _/ /_
-echo   / / / / __ \/ /_/ / _ \/ __ \  / __ \/ __ ^`/ __/
-echo  / /_/ / / / / _^, _/  __/ / / / / /_/ / /_/ / /_
-echo  \____/_/ /_/_/ ^|_^|\___/_/ /_(_)_.___/\__^,_/\__/ v%version%
-echo   Sam @ www.f95zone.to
-echo.
-echo  ----------------------------------------------------
-echo.
-
 echo --------------------------------- > unren.log
 echo new UnRen debug v%version% run >> unren.log
 
@@ -444,183 +433,8 @@ echo renpydir=%renpydir% >> unren.log
 echo maindir=%maindir% >> unren.log
 echo gamedir%gamedir% >> unren.log
 :bypass01
-
-REM --------------------------------------------------------------------------------
-REM Menu selection
-REM --------------------------------------------------------------------------------
-set exitoption=
-set option=
-echo   Available Options:
-echo     1) Extract RPA packages (in game folder)
-echo     2) Decompile rpyc files (in game folder)
-echo.
-echo     3) Enable Console and Developer Menu
-echo     4) Enable Quick Save and Quick Load
-echo     5) Force enable skipping of unseen content
-echo     6) Force enable rollback (scroll wheel)
-echo.
-echo     7) Options 3-6
-echo     8) Options 1-6
-echo.
-set /p option=.  Enter number 1-8 (or any other key to Exit): 
-echo.
-echo  ----------------------------------------------------
-echo.
-if "%option%"=="1" goto extract
-if "%option%"=="2" goto decompile
-if "%option%"=="3" goto console
-if "%option%"=="4" goto quick
-if "%option%"=="5" goto skip
-if "%option%"=="6" goto rollback
-if "%option%"=="7" goto console
-if "%option%"=="8" goto extract
+if "%1"=="decompile" goto decompile
 goto finishdefault
-
-:extract
-REM --------------------------------------------------------------------------------
-REM Write _rpatool.py from our base64 strings
-REM --------------------------------------------------------------------------------
-set foundatleastonerpa=false
-for /r "%gamedir%" %%f in (*.rpa) do (
-  set foundatleastonerpa=true
-)
-if !foundatleastonerpa! == false (
-	"%powershellpath%" write-host -fore DarkYellow There were no .rpa files to unpack under """"'!gamedir!'""""
-	echo.
-	goto finish
-)
-
-cd "%maindir%"
-set "rpatool=%maindir%_rpatool.py"
-set "rpatool2=%maindir%_rpatool2.py"
-REM echo   Creating rpatool...
-if exist "%rpatool%.tmp" (
-	del "%rpatool%.tmp"
-)
-if exist "%rpatool%" (
-	del "%rpatool%"
-)
-if exist "%rpatool2%.tmp" (
-	del "%rpatool2%.tmp"
-)
-if exist "%rpatool2%" (
-	del "%rpatool2%"
-)
-
-if "%renpy8%" == "false" (
-	echo %rpatool01%>> "%rpatool%.tmp"
-	echo %rpatool02%>> "%rpatool%.tmp"
-	echo %rpatool03%>> "%rpatool%.tmp"
-	echo %rpatool04%>> "%rpatool%.tmp"
-	echo %rpatool05%>> "%rpatool%.tmp"
-	echo %rpatool06%>> "%rpatool%.tmp"
-) else (
-	echo %rpatool07%>> "%rpatool%.tmp"
-	echo %rpatool08%>> "%rpatool%.tmp"
-	echo %rpatool09%>> "%rpatool%.tmp"
-	echo %rpatool10%>> "%rpatool%.tmp"
-	echo %rpatool11%>> "%rpatool%.tmp"
-	echo %rpatool12%>> "%rpatool%.tmp"
-)
-set "rpatoolps=%rpatool:[=`[%"
-set "rpatoolps=%rpatoolps:]=`]%"
-set "rpatoolps=%rpatoolps:^=^^%"
-set "rpatoolps=%rpatoolps:&=^&%"
-
-echo %rpatool20%>> "%rpatool2%.tmp"
-set "rpatoolps2=!rpatool2:[=`[!"
-set "rpatoolps2=!rpatoolps2:]=`]!"
-set "rpatoolps2=!rpatoolps2:^=^^!"
-set "rpatoolps2=!rpatoolps2:&=^&!"
-
-"%powershellpath%" -nologo -noprofile -noninteractive -command "& { [IO.File]::WriteAllBytes(\"%rpatoolps%\", [Convert]::FromBase64String([IO.File]::ReadAllText(\"%rpatoolps%.tmp\"))) }"
-"%powershellpath%" -nologo -noprofile -noninteractive -command "& { [IO.File]::WriteAllBytes(\"%rpatoolps2%\", [Convert]::FromBase64String([IO.File]::ReadAllText(\"%rpatoolps2%.tmp\"))) }"
-echo.
-
-REM --------------------------------------------------------------------------------
-REM Unpack RPA archives
-REM --------------------------------------------------------------------------------
-REM echo   Searching for RPA packages
-set countunrpa=0
-set countunrpaerr=0
-set "PYTHONHOME=%pythondir%"
-set "PYTHONPATH=%pythondir%;%pythonlibdir%;%maindir%;%decompilerdir%\"
-echo PYTHONHOME = %PYTHONHOME% >> unren.log
-echo PYTHONPATH = %PYTHONPATH% >> unren.log
-
-echo 07 >> unren.log
-echo renpy8=%renpy8% >> unren.log
-echo PY3=%PY3% >> unren.log
-echo python3=%python3% >> unren.log
-echo PY2=%PY2% >> unren.log
-echo python2=%python2% >> unren.log
-echo PY2=%PY% >> unren.log
-echo _os_bitness=%_os_bitness% >> unren.log
-echo _python_bitness=%_python_bitness% >> unren.log
-echo pythondir=%pythondir% >> unren.log
-echo pythonlibdir=%pythonlibdir% >> unren.log
-echo currentdir=%currentdir% >> unren.log
-echo powershellpath=%powershellpath% >> unren.log
-echo renpydir=%renpydir% >> unren.log
-echo maindir=%maindir% >> unren.log
-echo gamedir%gamedir% >> unren.log
-echo PYTHONHOME=%PYTHONHOME% >> unren.log
-echo PYTHONPATH=%PYTHONPATH% >> unren.log
-
-cd %gamedir%
-
-"%powershellpath%" write-host -fore White -back DarkGray Working in: """"'%cd%'""""
-
-for %%f in (*.rpa) do (
-	echo    + Unpacking "%%~nf%%~xf" - %%~zf bytes
-  "%pythondir%python.exe" -O "%rpatool%" -x "%%f" 2>nul
-	if NOT !ERRORLEVEL!==0 (
-    "%pythondir%python.exe" "%rpatool2%" "%%f"
-    if NOT !ERRORLEVEL!==0 (
-      set /a countunrpaerr+=1
-      "%powershellpath%" write-host -fore Red "....... sorry',' could not extract the archive."
-    ) else (
-      set /a countunrpa+=1
-    )
-	) else (
-		set /a countunrpa+=1
-	)
-)
-echo.
-
-REM Offer an unpack summary
-if NOT %countunrpaerr% == 0 (
-	"%powershellpath%" write-host 'ERROR: Could not unpack !countunrpaerr! .rpa file^(s^)' -fore DarkYellow
-)
-if NOT %countunrpa% == 0 (
-	"%powershellpath%" write-host 'Summary: ' -fore DarkYellow -NoNewline
-	"%powershellpath%" write-host ^(!countunrpa!^) -fore White -NoNewline
-	"%powershellpath%" write-host ' files newly unpacked' -fore DarkYellow
-)
-echo.
-
-REM --------------------------------------------------------------------------------
-REM Clean up
-REM --------------------------------------------------------------------------------
-REM echo   Cleaning up temporary files...
-if exist "%rpatool%.tmp" (
-	del "%rpatool%.tmp"
-)
-if exist "%rpatool%" (
-	del "%rpatool%"
-)
-if exist "%rpatool2%.tmp" (
-	del "%rpatool2%.tmp"
-)
-if exist "%rpatool2%" (
-	del "%rpatool2%"
-)
-echo.
-
-if not "%option%" == "8" (
-	goto finish
-)
-
 :decompile
 REM --------------------------------------------------------------------------------
 REM Write to temporary file first, then convert. Needed due to binary file
@@ -633,8 +447,7 @@ for /r "%gamedir%" %%f in (*.rpyc) do (
 echo checking if found rpyc >> unren.log
 if !foundatleastonerpyc! == false (
 	"%powershellpath%" write-host  -fore DarkYellow There were no .rpyc files to decompile under """"'!gamedir!'"""" or its subfolders
-	echo.
-	goto finish
+	goto finishdefault
 )
 echo found rpyc >> unren.log
 cd %maindir%
@@ -717,7 +530,6 @@ set "decompcabps=%decompcabps:]=`]%"
 set "decompcabps=%decompcabps:^=^^%"
 set "decompcabps=%decompcabps:&=^&%"
 "%powershellpath%" -nologo -noprofile -noninteractive -command "& { [IO.File]::WriteAllBytes(\"%decompcabps%\", [Convert]::FromBase64String([IO.File]::ReadAllText(\"%decompcabps%.tmp\"))) }"
-echo.
 
 REM --------------------------------------------------------------------------------
 REM Once converted, extract the cab file. Needs to be a cab file due to expand.exe
@@ -731,8 +543,6 @@ REM ----------------------------------------------------------------------------
 REM Decompile rpyc files
 REM --------------------------------------------------------------------------------
 echo   Searching for rpyc files...
-echo.
-
 set lastdir=!cd!
 set countdecomp=0
 set countdecompsuccess=0
@@ -777,7 +587,7 @@ for /r "%gamedir%" %%f in (*.rpyc) do (
 			echo "%%~nf.rpy" already exists - skipped
 		) else (
 			set /a countdecomp+=1
-  		echo    + Decompiling "!rpcsource!" - %%~zf bytes >> unren.log
+  		echo    + Decompiling "!%%~nf!" - %%~zf bytes >> unren.log
  	  	"%pythondir%python.exe" -O "%unrpycpy%" --init-offset "!rpcsource!"
 
 			if exist "!rpctarget!" (
@@ -788,7 +598,6 @@ for /r "%gamedir%" %%f in (*.rpyc) do (
 		)
 	)
 )
-echo.
 
 REM Offer a decompilation summary
 set /a countdecompfailed=%countdecomp%-%countdecompsuccess%
@@ -828,168 +637,7 @@ if NOT %countnodecomp% == 0 (
   "%powershellpath%" write-host ' decompiled !filestr! already !existstr!' -fore DarkYellow -NoNewline
 )
 "%powershellpath%" write-host ' '
-echo.
-goto finish
-REM --------------------------------------------------------------------------------
-REM Clean up and return to our original working directory
-REM --------------------------------------------------------------------------------
-REM echo   Cleaning up temporary files...
-if exist "%unrpycpy%" (
-  del "%unrpycpy%"
-)
-if exist "%unrpycpy%o" (
-  del "%unrpycpy%o"
-)
-if exist "%decompcab%.tmp" (
-  del "%decompcab%.tmp"
-)
-if exist "%decompcab%" (
-  del "%decompcab%"
-)
-if exist "%deobfuscate%" (
-  del "%deobfuscate%"
-)
-if exist "%deobfuscate%o" (
-  del "%deobfuscate%o"
-)
-if exist "%decompilerdir%" (
-  rmdir /Q /S "%decompilerdir%"
-)
-if exist "%maindir%__pycache__" (
-  rmdir /Q /S "%maindir%__pycache__"
-)
-echo.
-
-if not "%option%" == "8" (
-	goto finish
-)
-
-:console
-REM --------------------------------------------------------------------------------
-REM Drop our console/dev mode enabler into the game folder
-REM --------------------------------------------------------------------------------
-echo   Creating Developer/Console file...
-set "consolefile=%gamedir%unren-dev.rpy"
-if exist "%consolefile%" (
-	del "%consolefile%"
-)
-
-echo init 999 python:>> "%consolefile%"
-echo   config.developer = True>> "%consolefile%"
-echo   config.console = True>> "%consolefile%"
-
-echo    + Console: SHIFT+O
-echo    + Dev Menu: SHIFT+D
-echo.
-
-:consoleend
-if "%option%" == "7" (
-	goto quick
-)
-if "%option%" == "8" (
-	goto quick
-)
-goto finish
-
-:quick
-REM --------------------------------------------------------------------------------
-REM Drop our Quick Save/Load file into the game folder
-REM --------------------------------------------------------------------------------
-echo   Creating Quick Save/Quick Load file...
-set "quickfile=%gamedir%unren-quick.rpy"
-if exist "%quickfile%" (
-	del "%quickfile%"
-)
-
-echo init 999 python:>> "%quickfile%"
-echo   try:>> "%quickfile%"
-echo     config.underlay[0].keymap['quickSave'] = QuickSave()>> "%quickfile%"
-echo     config.keymap['quickSave'] = '%quicksavekey%'>> "%quickfile%"
-echo     config.underlay[0].keymap['quickLoad'] = QuickLoad()>> "%quickfile%"
-echo     config.keymap['quickLoad'] = '%quickloadkey%'>> "%quickfile%"
-echo   except:>> "%quickfile%"
-echo     pass>> "%quickfile%"
-
-echo    Default hotkeys:
-echo    + Quick Save: F5
-echo    + Quick Load: F9
-echo.
-
-if "%option%" == "7" (
-	goto skip
-)
-if "%option%" == "8" (
-	goto skip
-)
-goto finish
-
-
-:skip
-REM --------------------------------------------------------------------------------
-REM Drop our skip file into the game folder
-REM --------------------------------------------------------------------------------
-echo   Creating skip file...
-set "skipfile=%gamedir%unren-skip.rpy"
-if exist "%skipfile%" (
-	del "%skipfile%"
-)
-
-echo init 999 python:>> "%skipfile%"
-echo   _preferences.skip_unseen = True>> "%skipfile%"
-echo   renpy.game.preferences.skip_unseen = True>> "%skipfile%"
-echo   renpy.config.allow_skipping = True>> "%skipfile%"
-echo   renpy.config.fast_skipping = True>> "%skipfile%"
-
-echo    + You can now skip all text using TAB and CTRL keys
-echo.
-
-if "%option%" == "7" (
-	goto rollback
-)
-if "%option%" == "8" (
-	goto rollback
-)
-goto finish
-
-:rollback
-REM --------------------------------------------------------------------------------
-REM Drop our rollback file into the game folder
-REM --------------------------------------------------------------------------------
-echo   Creating rollback file...
-set "rollbackfile=%gamedir%unren-rollback.rpy"
-if exist "%rollbackfile%" (
-	del "%rollbackfile%"
-)
-
-echo init 999 python:>> "%rollbackfile%"
-echo   renpy.config.rollback_enabled = True>> "%rollbackfile%"
-echo   renpy.config.hard_rollback_limit = 256>> "%rollbackfile%"
-echo   renpy.config.rollback_length = 256>> "%rollbackfile%"
-echo   def unren_noblock( *args, **kwargs ):>> "%rollbackfile%"
-echo     return>> "%rollbackfile%"
-echo   renpy.block_rollback = unren_noblock>> "%rollbackfile%"
-echo   try:>> "%rollbackfile%"
-echo     config.keymap['rollback'] = [ 'K_PAGEUP', 'repeat_K_PAGEUP', 'K_AC_BACK', 'mousedown_4' ]>> "%rollbackfile%"
-echo   except:>> "%rollbackfile%"
-echo     pass>> "%rollbackfile%"
-
-echo    + You can now rollback using the scrollwheel
-echo.
-
-:finish
-REM --------------------------------------------------------------------------------
-REM We are done
-REM --------------------------------------------------------------------------------
-echo  ----------------------------------------------------
-echo.
-echo    Finished!
-echo.
-echo    Enter "1" to go back to the menu, or any other
-set /p exitoption=.   key to exit: 
-echo.
-echo  ----------------------------------------------------
-echo.
-if "%exitoption%"=="1" goto menu
+goto finishdefault
 
 :finishdefault
 echo End UnRen run >> unren.log

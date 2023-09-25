@@ -4,8 +4,7 @@
 
 ### Renpy
 
-- UnRen-1.0.11d used in this tool as rpa extractor and rpyc decompiler
-    - Contains unrpyc from (CensoredUsername/unrpyc)[https://github.com/CensoredUsername/unrpyc]
+- Used modified version of UnRen-1.0.11d in this tool
 
 ## Building
 
