@@ -1,9 +1,10 @@
-from os import path, listdir, remove, rmdir
+from os import path, listdir, remove, rmdir, environ as myenv, mkdir
 import re
 import subprocess
 import time
 from datetime import datetime
 import sys
+import hashlib
 
 from tkinter import Tk, StringVar, BooleanVar, Frame, Label, Entry, Checkbutton, messagebox, scrolledtext, END, WORD
 
@@ -118,6 +119,35 @@ def clear_temp_rpyc_decompilers(dirname, bat_path):
     if path.exists(unrpyc_pyo):
         remove(unrpyc_pyo)
 
+def fsencode(s):
+    """
+    :doc: file_rare
+    :name: renpy.fsencode
+
+    Converts s from unicode to the filesystem encoding.
+    """
+
+    if not isinstance(s, str):
+        return s
+
+    fsencoding = sys.getfilesystemencoding() or "utf-8"
+    return s.encode(fsencoding, "replace")
+
+def fsdecode(s):
+    """
+    :doc: file_rare
+    :name: renpy.fsdecode
+
+    Converts s from filesystem encoding to unicode.
+    """
+
+    if not isinstance(s, str):
+        return s
+
+    fsencoding = sys.getfilesystemencoding() or "utf-8"
+    #return s.decode(fsencoding)
+    return s
+
 def translate(renpyFrame: RenpyFrame):
     skip_rpa = False
     skip_rpyc = False
@@ -185,7 +215,10 @@ def translate(renpyFrame: RenpyFrame):
                 renpyFrame.progress = "Decompiling rpyc files skipped."
         #renpyFrame.stop_loading()
         now = datetime.now()
-        log_file_path = path.join(dirname, "game_translator-log-"+now.strftime("%m-%d-%Y, %H-%M-%S")+".txt")
+        logs_dir = path.join(dirname, "game_translator-logs")
+        if not path.isdir(logs_dir):
+            mkdir(logs_dir)
+        log_file_path = path.join(dirname, "game_translator-logs", "game_translator-log-"+now.strftime("%m-%d-%Y, %H-%M-%S")+".txt")
         log_file = open(log_file_path, "x")
         log_file.write("Game Translator by Rodanel Logs\nDate: "+now.strftime("%m/%d/%Y, %H:%M:%S")+"\n\n"+renpyFrame.progress)
         log_file.close()
