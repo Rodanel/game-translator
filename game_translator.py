@@ -7,6 +7,7 @@ from src.style.buttons import enabledButtonColor, toggle_button_state
 from src.style.frame import set_frame_attrs
 from src.games import renpy
 from src.games.detect_game import detect_game, GameType
+from src.settings import settings, Settings
 
 # initialize window
 root = Tk()
@@ -84,6 +85,7 @@ def browse_game():
     elif gameType == GameType.NONE:
         messagebox.showwarning(title="Not a supported game", message="This is not a supported game!\n\n"+filename)
     if gameType != GameType.NONE and gameType != GameType.EMPTY:
+        settings.addDefaultGameSettingsIFNotExists(gameType, filename)
         toggle_button_state(startButton, "normal")
     else:
         toggle_button_state(startButton, "disabled")

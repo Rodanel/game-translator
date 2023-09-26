@@ -9,9 +9,11 @@ import string
 
 from tkinter import Tk, StringVar, BooleanVar, Frame, Label, Entry, Checkbutton, messagebox, scrolledtext, END, WORD
 
+from src.games.detect_game import GameType
 from src.games.renpy.rpa import RpaEditor
 from src.games.renpy.unrpyc import unren_content
 from src.style.frame import set_frame_attrs
+from src.settings import settings, Settings
 
 CREATE_NO_WINDOW = 0x08000000
 
@@ -60,7 +62,7 @@ class RenpyFrame(object):
         
         self.__progressText__ = scrolledtext.ScrolledText(self.__frame__, wrap=WORD, state="disabled")
         self.__progressText__.pack(side="top", fill="both", expand=True)
-
+        self.__update_props()
     # element properties
     @property
     def root(self) -> Tk:
@@ -92,6 +94,41 @@ class RenpyFrame(object):
         self.__progressText__.insert(END, "\n"+value)
         self.__progressText__.see(END)
         self.__progressText__["state"] = "disabled"
+    
+    def __save_languageName(self, *args):
+        self.__save_setting(Settings.LANGUAGE_NAME, self.__languageName__)
+    def __save_languageCode(self, *args):
+        self.__save_setting(Settings.LANGUAGE_CODE, self.__languageCode__)
+    def __save_lockLocalization(self, *args):
+        self.__save_setting(Settings.LOCK_LOCALIZATION, self.__lockLocalization__)
+    def __save_extractRpaArchives(self, *args):
+        self.__save_setting(Settings.EXTRACT_RPA, self.__extractRpaArchives__)
+    def __save_decompileRpycFiles(self, *args):
+        self.__save_setting(Settings.DECOMPİLE_RPYC, self.__decompileRpycFiles__)
+
+    def __save_setting(self, propType, prop):
+        settings.updateGame(GameType.RENPY, self.filename, {propType: prop.get()})
+    def __restore_setting(self, propType, prop):
+        defaultSettings = Settings.getDefault(GameType.RENPY)
+        gameSettings = settings.data[str(GameType.RENPY)][self.filename]
+        prop.set(gameSettings[propType] if propType in gameSettings else defaultSettings[propType])
+
+    def __update_props(self):
+        self.__restore_setting(Settings.LANGUAGE_NAME, self.__languageName__)
+        self.__languageName__.trace_add("write", self.__save_languageName)
+        
+        self.__restore_setting(Settings.LANGUAGE_CODE, self.__languageCode__)
+        self.__languageCode__.trace_add("write", self.__save_languageCode)
+
+        self.__restore_setting(Settings.LOCK_LOCALIZATION, self.__lockLocalization__)
+        self.__lockLocalization__.trace_add("write", self.__save_lockLocalization)
+
+        self.__restore_setting(Settings.EXTRACT_RPA, self.__extractRpaArchives__)
+        self.__extractRpaArchives__.trace_add("write", self.__save_extractRpaArchives)
+
+        self.__restore_setting(Settings.DECOMPİLE_RPYC, self.__decompileRpycFiles__)
+        self.__decompileRpycFiles__.trace_add("write", self.__save_decompileRpycFiles)
+
     def clearProgress(self):
         self.__progressText__["state"] = "normal"
         self.__progressText__.delete(1.0, END)

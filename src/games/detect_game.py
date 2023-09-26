@@ -1,11 +1,18 @@
 from enum import Enum
-from os import path, listdir
-
+from os import path
 class GameType(Enum):
     EMPTY = -1
     NONE = 0
     RENPY = 1
-
+    def __str__(self):
+        if self == GameType.EMPTY:
+            return "empty"
+        elif self == GameType.NONE:
+            return "none"
+        elif self == GameType.RENPY:
+            return "renpy"
+        else:
+            return super.__str__(self)
 
 def detect_game(filename: str) -> GameType:
     if filename == "" or filename is None:
