@@ -5,8 +5,8 @@ import threading
 
 from src.style.buttons import enabledButtonColor, toggle_button_state
 from src.style.frame import set_frame_attrs
-from src.translation import renpy
-from src.detect_game import detect_game, GameType
+from src.games import renpy
+from src.games.detect_game import detect_game, GameType
 
 # initialize window
 root = Tk()

@@ -8,8 +8,8 @@ import hashlib
 
 from tkinter import Tk, StringVar, BooleanVar, Frame, Label, Entry, Checkbutton, messagebox, scrolledtext, END, WORD
 
-from src.tools.rpa import RpaEditor
-from src.tools.unrpyc import unren_content
+from src.games.renpy.rpa import RpaEditor
+from src.games.renpy.unrpyc import unren_content
 from src.style.frame import set_frame_attrs
 
 CREATE_NO_WINDOW = 0x08000000
@@ -221,7 +221,7 @@ def translate(renpyFrame: RenpyFrame):
                         renpyFrame.progress = "Decompiling rpyc files completed. Removing temp files."
                         clear_temp_rpyc_decompilers(dirname, bat_path)
                         time.sleep(3)
-                        renpyFrame.progress = "Temp files remove successfully!"
+                        renpyFrame.progress = "Temp files removed successfully!"
                     except Exception as e:
                         exception_occurred = True
                         error_text = "Could not decompile rpyc files.\n\nError: "+str(e)
