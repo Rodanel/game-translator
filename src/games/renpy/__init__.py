@@ -4,7 +4,6 @@ import subprocess
 import time
 from datetime import datetime
 import sys
-import hashlib
 
 from tkinter import Tk, StringVar, BooleanVar, Frame, Label, Entry, Checkbutton, messagebox, scrolledtext, END, WORD
 
@@ -179,10 +178,12 @@ def fix_console(line):
 def translate(renpyFrame: RenpyFrame):
     print(renpyFrame.filename+ " will be translated to "+renpyFrame.languageName+" ("+renpyFrame.languageCode+")!")
     dirname = path.dirname(renpyFrame.filename)
+    gamedir = path.join(dirname, "game")
+    tldir = path.join(gamedir, "tl")
+    logsdir = path.join(dirname, "game_translator-logs")
     if len(renpyFrame.languageCode) > 0 and re.match('^[abcdefghijklmnoprqstuwvyzx]+$',renpyFrame.languageCode):
         if len(renpyFrame.languageCode) > 0:
             renpyFrame.clearProgress()
-            gamedir = path.join(dirname, "game")
             exception_occurred = False
             if renpyFrame.extractRpaArchives:
                 for fname in listdir(gamedir):
@@ -269,13 +270,14 @@ def translate(renpyFrame: RenpyFrame):
                         renpyFrame.progress = fix_console(line)
                 renpyFrame.progress = "Genarated localization files successfully."
             if renpyFrame.lockLocalization:
+                
                 renpyFrame.progress = "Language will be locked to "+renpyFrame.languageName+" ("+renpyFrame.languageCode+") in next versions."
             else:
                 renpyFrame.progress = "\nvbox:"
                 renpyFrame.progress = "    style_prefix \"radio\""
                 renpyFrame.progress = "    label _(\"Language\")"
                 renpyFrame.progress = "    textbutton \"English\" action Language(None)"
-                for langdir in listdir(path.join(dirname, "game", "tl")):
+                for langdir in listdir(tldir):
                     if langdir != "None":
                         languageNameTemp = langdir
                         if renpyFrame.languageCode == langdir:
@@ -284,10 +286,9 @@ def translate(renpyFrame: RenpyFrame):
                 renpyFrame.progress = "\nAdd this code to \"screen preferences():\" in screens.rpy. Replace English with game's orijinal language."
             #renpyFrame.stop_loading()
             now = datetime.now()
-            logs_dir = path.join(dirname, "game_translator-logs")
-            if not path.isdir(logs_dir):
-                mkdir(logs_dir)
-            log_file_path = path.join(dirname, "game_translator-logs", "game_translator-log-"+now.strftime("%m-%d-%Y, %H-%M-%S")+".txt")
+            if not path.isdir(logsdir):
+                mkdir(logsdir)
+            log_file_path = path.join(logsdir, "game_translator-log-"+now.strftime("%m-%d-%Y, %H-%M-%S")+".txt")
             log_file = open(log_file_path, "x")
             log_file.write("Game Translator by Rodanel Logs\nDate: "+now.strftime("%m/%d/%Y, %H:%M:%S")+"\n\n"+renpyFrame.progress)
             log_file.close()
