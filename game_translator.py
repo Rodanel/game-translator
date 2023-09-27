@@ -68,7 +68,7 @@ def translate():
     if gameType == GameType.RENPY and renpyFrame is not None:
         try:
             toggle_button_state(startButton, "disabled")
-            renpy.translate(renpyFrame)
+            renpyFrame.generate_translation()
             toggle_button_state(startButton, "normal")
         except Exception as e:
             messagebox.showerror(title="Error", message=str(e))
