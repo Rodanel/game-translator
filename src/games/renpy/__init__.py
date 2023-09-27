@@ -1,4 +1,4 @@
-from os import path, listdir, remove, rmdir, environ as myenv, mkdir
+from os import path, listdir, remove, rmdir, environ as myenv, mkdir, walk
 import re
 import subprocess
 import time
@@ -6,17 +6,22 @@ from datetime import datetime
 import sys
 import random
 import string
-
-from tkinter import Tk, StringVar, BooleanVar, Frame, Label, Entry, Checkbutton, messagebox, scrolledtext, END, WORD
+from googletrans import Translator
+import threading
+from tkinter import Tk, StringVar, BooleanVar, Frame, Label, Entry, Checkbutton, messagebox, scrolledtext, END, WORD, Button
 
 from src.games.detect_game import GameType
 from src.games.renpy.rpa import RpaEditor
 from src.games.renpy.unrpyc import unren_content
 from src.style.frame import set_frame_attrs
 from src.settings import settings, Settings
+from src.style.buttons import enabledButtonColor, toggle_button_state
 
 CREATE_NO_WINDOW = 0x08000000
 
+
+translator = Translator()
+translator = Translator(service_urls=['translate.googleapis.com'])
 # renpy panel object
 class RenpyFrame(object):
 
@@ -54,12 +59,16 @@ class RenpyFrame(object):
         self.__extractRpaArchives__ = BooleanVar()
         self.__extractRpaArchivesCheck__ = Checkbutton(self.__frame__, text= "Extract RPA archives.", variable=self.__extractRpaArchives__, onvalue=True, offvalue=False)
         self.__extractRpaArchivesCheck__.pack(side="top", fill="x", anchor="n")
-        self.__extractRpaArchivesCheck__.select()
+
         self.__decompileRpycFiles__ = BooleanVar()
         self.__decompileRpycFilesCheck__ = Checkbutton(self.__frame__, text= "Decompile RPYC files.", variable=self.__decompileRpycFiles__, onvalue=True, offvalue=False)
         self.__decompileRpycFilesCheck__.pack(side="top", fill="x", anchor="n")
-        self.__decompileRpycFilesCheck__.select()
-        
+
+        self.__translateDescription__ = Label(self.__frame__, text="WARNING: Your languge code should be supported Google Translate language code for translating from Google Translate.")
+        self.__translateDescription__.pack(side="top", fill="x")
+        self.__translateButton__ = Button(self.__frame__, text="Auto Translate with Google Translate", background=enabledButtonColor, foreground="white", disabledforeground="white", state="disabled", command=lambda:self.google_translate_start())
+        self.__translateButton__.pack(side="top", fill="x")
+
         self.__progressText__ = scrolledtext.ScrolledText(self.__frame__, wrap=WORD, state="disabled")
         self.__progressText__.pack(side="top", fill="both", expand=True)
         self.__update_props()
@@ -94,10 +103,60 @@ class RenpyFrame(object):
         self.__progressText__.insert(END, "\n"+value)
         self.__progressText__.see(END)
         self.__progressText__["state"] = "disabled"
-    
+    @property
+    def translateButton(self) -> Button:
+        return self.__translateButton__
+
+    def google_translate_start(self):
+        start_translation_thread = threading.Thread(target=self.google_translate)
+        start_translation_thread.daemon = True
+        start_translation_thread.start()
+    def google_translate(self):
+        try:
+            tldir = path.join(path.dirname(self.filename), "game", "tl", self.__languageCode__.get())
+            if len(self.__languageCode__.get()) > 0 and path.exists(tldir):
+                self.clearProgress()
+                for _path, _subdirs, _files in walk(tldir):
+                    for _name in _files:
+                        reallocation = path.join(_path, _name)
+                        if path.isfile(reallocation) and reallocation.endswith(".rpy"):
+                            self.progress = "Translating \""+reallocation+"\"..."
+                            newtexts = ""
+                            with open(reallocation, "r+") as tlfile:
+                                lines = tlfile.readlines()
+                                for line in lines:
+                                    line = str(line)
+                                    if not line.startswith("#") and not line.startswith("    #") and not line.startswith("translate ") and not line.startswith("   old") and not len(line.strip()) == 0:
+                                        print("Old line: " + line)
+                                        p = re.compile('\\"(.*)\\"',)
+                                        result = p.search(line)
+                                        if result is not None:
+                                            translated = translator.translate(result.group(1), dest = self.languageCode)
+                                            print(translated.text)
+                                            line = line.replace("\""+result.group(1)+"\"", "\""+translated.text+"\"")
+                                            
+                                        print("New line: " + line)
+                                    newtexts += line
+                            tlfile.closed
+                            with open(reallocation, "w") as tlfile2:
+                                tlfile2.write(newtexts)
+                            tlfile2.closed
+                            self.progress = "Translated the file.." 
+                self.progress = "Translation completed! Please launch the game and check if has any error."
+            else:
+                self.progress =  "Translation folder \""+tldir+"\" not found" 
+        except Exception as e:
+            self.progress = "Translation failed! Error: \n\n"+str(e)
+        self.save_progress()
+    def update_google_translate_button_state(self):
+        if len(self.__languageCode__.get()) > 0 and path.exists(path.join(path.dirname(self.filename), "game", "tl", self.__languageCode__.get())):
+            toggle_button_state(self.__translateButton__, "normal") 
+        else:
+            toggle_button_state(self.__translateButton__, "disabled") 
     def __save_languageName(self, *args):
         self.__save_setting(Settings.LANGUAGE_NAME, self.__languageName__)
     def __save_languageCode(self, *args):
+        self.update_google_translate_button_state()
         self.__save_setting(Settings.LANGUAGE_CODE, self.__languageCode__)
     def __save_lockLocalization(self, *args):
         self.__save_setting(Settings.LOCK_LOCALIZATION, self.__lockLocalization__)
@@ -119,6 +178,7 @@ class RenpyFrame(object):
         
         self.__restore_setting(Settings.LANGUAGE_CODE, self.__languageCode__)
         self.__languageCode__.trace_add("write", self.__save_languageCode)
+        self.update_google_translate_button_state()
 
         self.__restore_setting(Settings.LOCK_LOCALIZATION, self.__lockLocalization__)
         self.__lockLocalization__.trace_add("write", self.__save_lockLocalization)
@@ -133,6 +193,17 @@ class RenpyFrame(object):
         self.__progressText__["state"] = "normal"
         self.__progressText__.delete(1.0, END)
         self.__progressText__["state"] = "disabled"
+    
+    def save_progress(self):
+        now = datetime.now()
+        logsdir = path.join(path.dirname(self.filename), "game_translator-logs")
+        if not path.isdir(logsdir):
+            mkdir(logsdir)
+        log_file_path = path.join(logsdir, "game_translator-log-"+now.strftime("%m-%d-%Y, %H-%M-%S")+".txt")
+        log_file = open(log_file_path, "x")
+        log_file.write("Game Translator by Rodanel Logs\nDate: "+now.strftime("%m/%d/%Y, %H:%M:%S")+"\n\n"+self.progress)
+        log_file.close()
+        self.progress = "\nYou can find this log file in "+log_file_path+" later."
     # hide renpy panel    
     def destroy(self):
         if self.__frame__ is not None:
@@ -223,7 +294,6 @@ def translate(renpyFrame: RenpyFrame):
     dirname = path.dirname(renpyFrame.filename)
     gamedir = path.join(dirname, "game")
     tldir = path.join(gamedir, "tl")
-    logsdir = path.join(dirname, "game_translator-logs")
     commentline = "# Generated by \"Game Translator by Rodanel\""
     if len(renpyFrame.languageCode) > 0 and re.match('^[abcdefghijklmnoprqstuwvyzx]+$',renpyFrame.languageCode):
         if len(renpyFrame.languageCode) > 0:
@@ -275,7 +345,7 @@ def translate(renpyFrame: RenpyFrame):
                 else:
                     renpyFrame.progress = "Decompiling rpyc files skipped."
             if not exception_occurred:
-                renpyFrame.progress = "Genarating localization files started..."
+                renpyFrame.progress = "Genarating translation files started..."
                 executable_path = path.dirname(fsdecode(renpyFrame.filename))
                 game_extension = ".exe" if renpyFrame.filename.endswith(".exe") else ""
                 executables = [ "python"+game_extension]
@@ -312,7 +382,7 @@ def translate(renpyFrame: RenpyFrame):
                         break
                     else:
                         renpyFrame.progress = fix_console(line)
-                renpyFrame.progress = "Genarated localization files successfully."
+                renpyFrame.progress = "Genarated translation files successfully."
             if renpyFrame.lockLocalization:
                 renpyFrame.progress = "Language locking to "+renpyFrame.languageName+" ("+renpyFrame.languageCode+")..."
                 renpyFrame.progress = "Looking for existed lock file."
@@ -350,14 +420,8 @@ def translate(renpyFrame: RenpyFrame):
                         renpyFrame.progress = "    textbutton \""+languageNameTemp+"\" action Language(\""+langdir+"\")"
                 renpyFrame.progress = "\nAdd this code to \"screen preferences():\" in screens.rpy. Replace English with game's orijinal language."
             #renpyFrame.stop_loading()
-            now = datetime.now()
-            if not path.isdir(logsdir):
-                mkdir(logsdir)
-            log_file_path = path.join(logsdir, "game_translator-log-"+now.strftime("%m-%d-%Y, %H-%M-%S")+".txt")
-            log_file = open(log_file_path, "x")
-            log_file.write("Game Translator by Rodanel Logs\nDate: "+now.strftime("%m/%d/%Y, %H:%M:%S")+"\n\n"+renpyFrame.progress)
-            log_file.close()
-            renpyFrame.progress = "\nYou can find this log file in "+log_file_path+" later."
+            renpyFrame.save_progress()
+            renpyFrame.progress = "\nClick \""+renpyFrame.translateButton["text"]+"\" button to auto translate."
         else:
             renpyFrame.progress = "Language name can not be empty."
     else:
