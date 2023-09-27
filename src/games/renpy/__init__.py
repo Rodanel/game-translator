@@ -102,10 +102,11 @@ class RenpyFrame(object):
         self.__extractRpaArchives__ = BooleanVar()
         self.__extractRpaArchivesCheck__ = Checkbutton(self.__frame__, text= "Extract RPA archives.", variable=self.__extractRpaArchives__, onvalue=True, offvalue=False)
         self.__extractRpaArchivesCheck__.pack(side="top", fill="x", anchor="n")
-
+        self.__extractRpaArchivesCheck__.select()
         self.__decompileRpycFiles__ = BooleanVar()
         self.__decompileRpycFilesCheck__ = Checkbutton(self.__frame__, text= "Decompile RPYC files.", variable=self.__decompileRpycFiles__, onvalue=True, offvalue=False)
         self.__decompileRpycFilesCheck__.pack(side="top", fill="x", anchor="n")
+        self.__decompileRpycFilesCheck__.select()
 
         self.__translateDescription__ = Label(self.__frame__, text="WARNING: Your languge code should be supported Google Translate language code for translating from Google Translate.", wraplength=wrap_length)
         self.__translateDescription__.pack(side="top", fill="x")
@@ -228,9 +229,13 @@ class RenpyFrame(object):
     def __save_setting(self, propType, prop):
         settings.updateGame(GameType.RENPY, self.filename, {propType: prop.get()})
     def __restore_setting(self, propType, prop):
-        defaultSettings = Settings.getDefault(GameType.RENPY)
-        gameSettings = settings.data[str(GameType.RENPY)][self.filename]
-        prop.set(gameSettings[propType] if propType in gameSettings else defaultSettings[propType])
+        try:
+            defaultSettings = Settings.getDefault(GameType.RENPY)
+            gameSettings = settings.data[str(GameType.RENPY)][self.filename]
+            prop.set(gameSettings[propType] if propType in gameSettings else defaultSettings[propType])
+        except Exception as e:
+            print("Could not restore setting: "+propType)
+            print("Error: "+str(e))
 
     def __update_props(self):
         self.__restore_setting(Settings.LANGUAGE_NAME, self.__languageName__)
