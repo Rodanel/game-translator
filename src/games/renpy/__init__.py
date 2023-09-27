@@ -199,6 +199,18 @@ class RenpyFrame(object):
             self.__googleTranslateLanguageCodeEntry__["state"] = "normal"
         else:
             self.__googleTranslateLanguageCodeEntry__["state"] = "disabled"
+    def __disable_all_controls(self, disabled: bool = True):
+        self.__languageNameEntry__["state"] = "disabled" if disabled else "normal"
+        self.__languageFolderNameEntry__["state"] = "disabled" if disabled else "normal"
+        self.__lockLocalizationCheck__["state"] = "disabled" if disabled else "normal"
+        self.__extractRpaArchivesCheck__["state"] = "disabled" if disabled else "normal"
+        self.__decompileRpycFilesCheck__["state"] = "disabled" if disabled else "normal"
+        self.__translateWithGoogleTranslateCheck__["state"] = "disabled" if disabled else "normal"
+        if disabled:
+            self.__googleTranslateLanguageCodeEntry__["state"] = "disabled"
+        else:
+            self.__update_googleTranslateLanguageCodeState()
+        print("")
 
     def __save_setting(self, propType, prop):
         settings.updateGame(GameType.RENPY, self.filename, {propType: prop.get()})
@@ -469,6 +481,7 @@ class RenpyFrame(object):
         if len(self.languageFolderName) >= 3 and re.match('^[abcdefghijklmnoprqstuwvyzx]+$',self.languageFolderName):
             if len(self.languageName) > 0:
                 self.clearProgress()
+                self.__disable_all_controls(True)
                 #self.start_loading()
                 if self.__extract_rpa_archives():
                     if self.__decompile_rpyc_files():
@@ -477,6 +490,7 @@ class RenpyFrame(object):
                                 if self.__generate_translation_lock_file():
                                     pass
                 #self.stop_loading()
+                self.__disable_all_controls(False)
                 self.save_progress()
             else:
                 self.progress = "Language name can not be empty."
