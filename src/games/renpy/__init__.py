@@ -390,6 +390,7 @@ class RenpyFrame(object):
         return True
     def __google_translate(self):
         try:
+            translated_comment = " # translated"
             if self.translatewithGoogleTranslate:
                 if len(self.googleTranslateLanguageCode) > 0:
                     if path.exists(self.tlfilesdir):
@@ -403,18 +404,18 @@ class RenpyFrame(object):
                                         lines = tlfile.readlines()
                                         for line in lines:
                                             line = str(line)
-                                            if not line.startswith("#") and not line.startswith("    #") and not line.startswith("translate ") and not line.startswith("   old") and not len(line.strip()) == 0:
+                                            if not line.strip().startswith("#") and not line.startswith("translate ") and not line.strip().startswith("old") and not len(line.strip()) == 0 and not line.endswith(translated_comment):
                                                 p = re.compile('\\"(.*)\\"',)
                                                 result = p.search(line)
                                                 if result is not None:
                                                     translated = translator.translate(result.group(1), dest = self.googleTranslateLanguageCode)
-                                                    line = line.replace("\""+result.group(1)+"\"", "\""+translated.text+"\"")
+                                                    line = line.replace("\""+result.group(1)+"\"", "\""+translated.text+"\""+translated_comment)
                                             newtexts += line
                                     tlfile.closed
                                     with open(reallocation, "w") as tlfile2:
                                         tlfile2.write(newtexts)
                                     tlfile2.closed
-                                    self.progress = "Translated the file.." 
+                                    self.progress = "Translation of \""+reallocation+"\" successfull!" 
                         self.progress = "Translation completed! Please launch the game and check if has any error."
                     else:
                         self.progress =  "Translation folder \""+self.tlfilesdir+"\" not found!"
