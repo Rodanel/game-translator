@@ -345,69 +345,81 @@ def translate(renpyFrame: RenpyFrame):
                 else:
                     renpyFrame.progress = "Decompiling rpyc files skipped."
             if not exception_occurred:
-                renpyFrame.progress = "Genarating translation files started..."
-                executable_path = path.dirname(fsdecode(renpyFrame.filename))
-                game_extension = ".exe" if renpyFrame.filename.endswith(".exe") else ""
-                executables = [ "python"+game_extension]
-                executables.append(renpyFrame.filename)
-                for i in executables:
-                    executable = path.join(executable_path, i)
-                    if path.exists(executable):
-                        break
-                else:
-                    raise Exception("Python interpreter not found: %r", executables)
-                cmd = [ executable, "-EO", sys.argv[0] ]
-                args = [ "translate", renpyFrame.languageCode ]
-                cmd.append(dirname)
-                cmd.extend(args)
-
-                environ = dict(myenv)
-                environ.update({})
-
-                encoded_environ = { }
-
-                for k, v in environ.items():
-                    if v is None:
-                        continue
-
-                    encoded_environ[str(k)] = str(v)
-
-                # Launch the project.
-                cmd = [ str(i) for i in cmd ]
-
-                p = subprocess.Popen(cmd, stdout=subprocess.PIPE, bufsize=1, creationflags=CREATE_NO_WINDOW,env=encoded_environ)
-                while True:
-                    line = p.stdout.readline()
-                    if not line:
-                        break
-                    else:
-                        renpyFrame.progress = fix_console(line)
-                renpyFrame.progress = "Genarated translation files successfully."
-            if renpyFrame.lockLocalization:
-                renpyFrame.progress = "Language locking to "+renpyFrame.languageName+" ("+renpyFrame.languageCode+")..."
-                renpyFrame.progress = "Looking for existed lock file."
-                lockfilefound = None
-                for foundlockfile in listdir(gamedir):
-                    lockfilerealLocation = path.join(gamedir, foundlockfile)
-                    if path.isfile(lockfilerealLocation) and lockfilerealLocation.endswith(".rpy"):
-                        with open(lockfilerealLocation, "r") as extlocktlfile:
-                            extlocktlfilecontent = fsdecode(extlocktlfile.read())
-                        extlocktlfile.closed
-                        if commentline in extlocktlfilecontent:
-                            remove(lockfilerealLocation)
-                            lockfilefound = lockfilerealLocation
+                try:
+                    renpyFrame.progress = "Genarating translation files started..."
+                    executable_path = path.dirname(fsdecode(renpyFrame.filename))
+                    game_extension = ".exe" if renpyFrame.filename.endswith(".exe") else ""
+                    executables = [ "python"+game_extension]
+                    executables.append(renpyFrame.filename)
+                    for i in executables:
+                        executable = path.join(executable_path, i)
+                        if path.exists(executable):
                             break
-                if lockfilefound is not None:
-                    renpyFrame.progress = "Lock file found in \""+lockfilerealLocation+"\" and removed."
-                    renpyFrame.progress = "Creating new one..."
-                else:
-                    renpyFrame.progress = "Lock file not found, creating one..."
-                locktlfile = path.join(gamedir, generate_random_rpy(6))
-                lock_tl_file = open(locktlfile, "x")
-                lock_tl_file.write(commentline+"\ninit python:\n    config.language = \""+renpyFrame.languageCode+"\"")
-                lock_tl_file.close()
-                renpyFrame.progress = "Language locked to "+renpyFrame.languageName+" ("+renpyFrame.languageCode+"). For unlocking just delete \""+locktlfile+"\" file."
-            else:
+                    else:
+                        raise Exception("Python interpreter not found: %r", executables)
+                    cmd = [ executable, "-EO", sys.argv[0] ]
+                    args = [ "translate", renpyFrame.languageCode ]
+                    cmd.append(dirname)
+                    cmd.extend(args)
+
+                    environ = dict(myenv)
+                    environ.update({})
+
+                    encoded_environ = { }
+
+                    for k, v in environ.items():
+                        if v is None:
+                            continue
+
+                        encoded_environ[str(k)] = str(v)
+
+                    # Launch the project.
+                    cmd = [ str(i) for i in cmd ]
+
+                    p = subprocess.Popen(cmd, stdout=subprocess.PIPE, bufsize=1, creationflags=CREATE_NO_WINDOW,env=encoded_environ)
+                    while True:
+                        line = p.stdout.readline()
+                        if not line:
+                            break
+                        else:
+                            renpyFrame.progress = fix_console(line)
+                    renpyFrame.progress = "Genarated translation files successfully."
+                except Exception as e:
+                    exception_occurred = True
+                    error_text = "Could not create translation files.\n\nError: "+str(e)
+                    renpyFrame.progress = error_text
+                    messagebox.showerror("Could not create translation files.", message=error_text)
+            if renpyFrame.lockLocalization and not exception_occurred:
+                try:
+                    renpyFrame.progress = "Language locking to "+renpyFrame.languageName+" ("+renpyFrame.languageCode+")..."
+                    renpyFrame.progress = "Looking for existed lock file."
+                    lockfilefound = None
+                    for foundlockfile in listdir(gamedir):
+                        lockfilerealLocation = path.join(gamedir, foundlockfile)
+                        if path.isfile(lockfilerealLocation) and lockfilerealLocation.endswith(".rpy"):
+                            with open(lockfilerealLocation, "r") as extlocktlfile:
+                                extlocktlfilecontent = fsdecode(extlocktlfile.read())
+                            extlocktlfile.closed
+                            if commentline in extlocktlfilecontent:
+                                remove(lockfilerealLocation)
+                                lockfilefound = lockfilerealLocation
+                                break
+                    if lockfilefound is not None:
+                        renpyFrame.progress = "Lock file found in \""+lockfilerealLocation+"\" and removed."
+                        renpyFrame.progress = "Creating new one..."
+                    else:
+                        renpyFrame.progress = "Lock file not found, creating one..."
+                    locktlfile = path.join(gamedir, generate_random_rpy(6))
+                    lock_tl_file = open(locktlfile, "x")
+                    lock_tl_file.write(commentline+"\ninit python:\n    config.language = \""+renpyFrame.languageCode+"\"")
+                    lock_tl_file.close()
+                    renpyFrame.progress = "Language locked to "+renpyFrame.languageName+" ("+renpyFrame.languageCode+"). For unlocking just delete \""+locktlfile+"\" file."
+                except Exception as e:
+                    exception_occurred = True
+                    error_text = "Could not create translation lock file.\n\nError: "+str(e)
+                    renpyFrame.progress = error_text
+                    messagebox.showerror("Could not create translation lock file.", message=error_text)  
+            elif not exception_occurred:
                 renpyFrame.progress = "\nvbox:"
                 renpyFrame.progress = "    style_prefix \"radio\""
                 renpyFrame.progress = "    label _(\"Language\")"
