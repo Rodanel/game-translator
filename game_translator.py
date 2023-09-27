@@ -46,35 +46,6 @@ renpyFrame = None
 filename = StringVar()
 gameType = GameType.EMPTY
 
-# find current frame
-def destroyEmptyFrame():
-    global emptyFrame
-    if emptyFrame is not None:
-        emptyFrame.pack_forget()
-        emptyFrame.destroy()
-        emptyFrame = None
-def destroyRenpyFrame():
-    global renpyFrame
-    if renpyFrame is not None:
-        renpyFrame.destroy()
-        renpyFrame = None
-def showFrame():
-    global gameType, filename, emptyFrame, renpyFrame
-    print(str(gameType))
-    if gameType == GameType.NONE or gameType == GameType.EMPTY:
-        destroyEmptyFrame()
-        emptyFrame = set_frame_attrs(emptyFrame, root)
-        emptyLabel = Label(emptyFrame, text="Click \"Browse\" for selecting a game")
-        emptyLabel.pack(side= TOP, fill=X, expand=True, anchor=("center"))
-    else:
-        destroyEmptyFrame()
-    if gameType == GameType.RENPY:
-        destroyRenpyFrame()
-        renpyFrame = renpy.RenpyFrame(root, filename)
-    else:
-        destroyRenpyFrame()
-showFrame()
-
 # select game excutable
 def browse_game():
     global filename, gameType
@@ -123,6 +94,36 @@ browseButton = Button(root, text="Browse", background=enabledButtonColor, foregr
 browseButton.pack(side=BOTTOM, fill=X)
 
 toggle_button_state(startButton, "disabled")
+
+
+# find current frame
+def destroyEmptyFrame():
+    global emptyFrame
+    if emptyFrame is not None:
+        emptyFrame.pack_forget()
+        emptyFrame.destroy()
+        emptyFrame = None
+def destroyRenpyFrame():
+    global renpyFrame
+    if renpyFrame is not None:
+        renpyFrame.destroy()
+        renpyFrame = None
+def showFrame():
+    global gameType, filename, emptyFrame, renpyFrame
+    print(str(gameType))
+    if gameType == GameType.NONE or gameType == GameType.EMPTY:
+        destroyEmptyFrame()
+        emptyFrame = set_frame_attrs(emptyFrame, root)
+        emptyLabel = Label(emptyFrame, text="Click \""+browseButton["text"]+"\" for selecting a game")
+        emptyLabel.pack(side= TOP, fill=X, expand=True, anchor=("center"))
+    else:
+        destroyEmptyFrame()
+    if gameType == GameType.RENPY:
+        destroyRenpyFrame()
+        renpyFrame = renpy.RenpyFrame(root, filename)
+    else:
+        destroyRenpyFrame()
+showFrame()
 
 # show window
 root.mainloop()
