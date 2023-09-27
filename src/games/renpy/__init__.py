@@ -406,6 +406,9 @@ class RenpyFrame(object):
                         extlocktlfile.closed
                         if self.commentline in extlocktlfilecontent:
                             remove(lockfilerealLocation)
+                            rpycLocation = lockfilerealLocation[:-4]+".rpyc"
+                            if path.exists(rpycLocation):
+                                remove(rpycLocation)
                             lockfilefound = lockfilerealLocation
                             break
                 if lockfilefound is not None:
