@@ -5,7 +5,7 @@ from src.games.detect_game import GameType
 
 class Settings(object):
     LANGUAGE_NAME = "languageName"
-    LANGUAGE_CODE = "languageCode"
+    LANGUAGE_FOLDER_NAME = "languageFolderName"
     LOCK_LOCALIZATION = "lockLocalization"
     EXTRACT_RPA = "extractRpaFiles"
     DECOMPİLE_RPYC = "decompileRpycFiles"
@@ -15,7 +15,7 @@ class Settings(object):
         if gameType == GameType.RENPY:
             return {
                 Settings.LANGUAGE_NAME: "",
-                Settings.LANGUAGE_CODE: "",
+                Settings.LANGUAGE_FOLDER_NAME: "",
                 Settings.LOCK_LOCALIZATION: False,
                 Settings.EXTRACT_RPA: True,
                 Settings.DECOMPİLE_RPYC: True,

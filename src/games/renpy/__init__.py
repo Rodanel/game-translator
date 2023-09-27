@@ -88,13 +88,13 @@ class RenpyFrame(object):
         self.__languageNameEntry__ = Entry(self.__languageNameFrame__, textvariable=self.__languageName__, width=tb_width)
         self.__languageNameEntry__.pack(side="right")
     
-        self.__languageCodeFrame__ = Frame(self.__frame__)
-        self.__languageCodeFrame__.pack(side="top", fill="x", anchor="n")
-        self.__languageCodeLabel__ = Label(self.__languageCodeFrame__, text="Language Code (only english characters):")
-        self.__languageCodeLabel__.pack(side="left", anchor="e")
-        self.__languageCode__ = StringVar()
-        self.__languageCodeEntry__ = Entry(self.__languageCodeFrame__, textvariable=self.__languageCode__, width=tb_width)
-        self.__languageCodeEntry__.pack(side="right")
+        self.__languageFolderNameFrame__ = Frame(self.__frame__)
+        self.__languageFolderNameFrame__.pack(side="top", fill="x", anchor="n")
+        self.__languageFolderNameLabel__ = Label(self.__languageFolderNameFrame__, text="Language Folder Name:")
+        self.__languageFolderNameLabel__.pack(side="left", anchor="e")
+        self.__languageFolderName__ = StringVar()
+        self.__languageFolderNameEntry__ = Entry(self.__languageFolderNameFrame__, textvariable=self.__languageFolderName__, width=tb_width)
+        self.__languageFolderNameEntry__.pack(side="right")
         
         self.__lockLocalization__ = BooleanVar()
         self.__lockLocalizationCheck__ = Checkbutton(self.__frame__, text= "Lock translation. (Locks the game to this language. No need to update screens.rpy file for adding language options if checked.)", variable=self.__lockLocalization__, onvalue=True, offvalue=False, wraplength=wrap_length)
@@ -133,7 +133,7 @@ class RenpyFrame(object):
         return path.join(self.gamedir, "tl")
     @property
     def tlfilesdir(self) -> str:
-        return path.join(self.gamedir, "tl", self.languageCode)
+        return path.join(self.gamedir, "tl", self.languageFolderName)
     @property
     def unrenfile(self) -> str:
         return path.join(self.dirname, "unren.bat")
@@ -141,8 +141,8 @@ class RenpyFrame(object):
     def languageName(self) -> str:
         return self.__languageName__.get()
     @property
-    def languageCode(self) -> str:
-        return self.__languageCode__.get()
+    def languageFolderName(self) -> str:
+        return self.__languageFolderName__.get()
     @property
     def extractRpaArchives(self) -> bool:
         return self.__extractRpaArchives__.get()
@@ -174,7 +174,7 @@ class RenpyFrame(object):
         start_translation_thread.start()
     def google_translate(self):
         try:
-            if len(self.__languageCode__.get()) > 0 and path.exists(self.tlfilesdir):
+            if len(self.languageFolderName) > 0 and path.exists(self.tlfilesdir):
                 self.clearProgress()
                 for _path, _subdirs, _files in walk(self.tlfilesdir):
                     for _name in _files:
@@ -191,7 +191,7 @@ class RenpyFrame(object):
                                         p = re.compile('\\"(.*)\\"',)
                                         result = p.search(line)
                                         if result is not None:
-                                            translated = translator.translate(result.group(1), dest = self.languageCode)
+                                            translated = translator.translate(result.group(1), dest = self.languageFolderName)
                                             print(translated.text)
                                             line = line.replace("\""+result.group(1)+"\"", "\""+translated.text+"\"")
                                             
@@ -209,15 +209,15 @@ class RenpyFrame(object):
             self.progress = "Translation failed! Error: \n\n"+str(e)
         self.save_progress()
     def update_google_translate_button_state(self):
-        if len(self.__languageCode__.get()) > 0 and path.exists(self.tlfilesdir):
+        if len(self.languageFolderName) > 0 and path.exists(self.tlfilesdir):
             toggle_button_state(self.__translateButton__, "normal") 
         else:
             toggle_button_state(self.__translateButton__, "disabled") 
     def __save_languageName(self, *args):
         self.__save_setting(Settings.LANGUAGE_NAME, self.__languageName__)
-    def __save_languageCode(self, *args):
+    def __save_languageFolderName(self, *args):
         self.update_google_translate_button_state()
-        self.__save_setting(Settings.LANGUAGE_CODE, self.__languageCode__)
+        self.__save_setting(Settings.LANGUAGE_FOLDER_NAME, self.__languageFolderName__)
     def __save_lockLocalization(self, *args):
         self.__save_setting(Settings.LOCK_LOCALIZATION, self.__lockLocalization__)
     def __save_extractRpaArchives(self, *args):
@@ -236,8 +236,8 @@ class RenpyFrame(object):
         self.__restore_setting(Settings.LANGUAGE_NAME, self.__languageName__)
         self.__languageName__.trace_add("write", self.__save_languageName)
         
-        self.__restore_setting(Settings.LANGUAGE_CODE, self.__languageCode__)
-        self.__languageCode__.trace_add("write", self.__save_languageCode)
+        self.__restore_setting(Settings.LANGUAGE_FOLDER_NAME, self.__languageFolderName__)
+        self.__languageFolderName__.trace_add("write", self.__save_languageFolderName)
         self.update_google_translate_button_state()
 
         self.__restore_setting(Settings.LOCK_LOCALIZATION, self.__lockLocalization__)
@@ -359,7 +359,7 @@ class RenpyFrame(object):
             else:
                 raise Exception("Python interpreter not found: %r", executables)
             cmd = [ executable, "-EO", sys.argv[0] ]
-            args = [ "translate", self.languageCode ]
+            args = [ "translate", self.languageFolderName ]
             cmd.append(self.dirname)
             cmd.extend(args)
 
@@ -395,7 +395,7 @@ class RenpyFrame(object):
     def __generate_translation_lock_file(self):
         if self.lockLocalization:
             try:
-                self.progress = "Language locking to "+self.languageName+" ("+self.languageCode+")..."
+                self.progress = "Language locking to "+self.languageName+" ("+self.languageFolderName+")..."
                 self.progress = "Looking for existed lock file."
                 lockfilefound = None
                 for foundlockfile in listdir(self.gamedir):
@@ -415,9 +415,9 @@ class RenpyFrame(object):
                     self.progress = "Lock file not found, creating one..."
                 locktlfile = path.join(self.gamedir, self.generate_random_rpy_name(6))
                 lock_tl_file = open(locktlfile, "x")
-                lock_tl_file.write(self.commentline+"\ninit python:\n    config.language = \""+self.languageCode+"\"")
+                lock_tl_file.write(self.commentline+"\ninit python:\n    config.language = \""+self.languageFolderName+"\"")
                 lock_tl_file.close()
-                self.progress = "Language locked to "+self.languageName+" ("+self.languageCode+"). For unlocking just delete \""+locktlfile+"\" file."
+                self.progress = "Language locked to "+self.languageName+" ("+self.languageFolderName+"). For unlocking just delete \""+locktlfile+"\" file."
             except Exception as e:
                 error_text = "Could not create translation lock file.\n\nError: "+str(e)
                 self.progress = error_text
@@ -431,13 +431,13 @@ class RenpyFrame(object):
             for langdir in listdir(self.tldir):
                 if langdir != "None":
                     languageNameTemp = langdir
-                    if self.languageCode == langdir:
+                    if self.languageFolderName == langdir:
                         languageNameTemp = self.languageName
                     self.progress = "    textbutton \""+languageNameTemp+"\" action Language(\""+langdir+"\")"
             self.progress = "\nAdd this code to \"screen preferences():\" in screens.rpy. Replace English with game's orijinal language."
         return True
     def generate_translation(self):
-        if len(self.languageCode) >= 3 and re.match('^[abcdefghijklmnoprqstuwvyzx]+$',self.languageCode):
+        if len(self.languageFolderName) >= 3 and re.match('^[abcdefghijklmnoprqstuwvyzx]+$',self.languageFolderName):
             if len(self.languageName) > 0:
                 self.clearProgress()
                 #self.start_loading()
@@ -452,7 +452,7 @@ class RenpyFrame(object):
             else:
                 self.progress = "Language name can not be empty."
         else:
-            self.progress = "Language code should be at least 3 characters and contain only english lowercase characters."
+            self.progress = "Language folder name should be at least 3 characters and contain only lowercase english characters."
         return
     # hide renpy panel    
     def destroy(self):
