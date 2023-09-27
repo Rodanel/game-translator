@@ -437,8 +437,8 @@ class RenpyFrame(object):
             self.progress = "\nAdd this code to \"screen preferences():\" in screens.rpy. Replace English with game's orijinal language."
         return True
     def generate_translation(self):
-        if len(self.languageCode) > 0 and re.match('^[abcdefghijklmnoprqstuwvyzx]+$',self.languageCode):
-            if len(self.languageCode) > 0:
+        if len(self.languageCode) >= 3 and re.match('^[abcdefghijklmnoprqstuwvyzx]+$',self.languageCode):
+            if len(self.languageName) > 0:
                 self.clearProgress()
                 #self.start_loading()
                 if self.__extract_rpa_archives():
@@ -452,7 +452,7 @@ class RenpyFrame(object):
             else:
                 self.progress = "Language name can not be empty."
         else:
-            self.progress = "Language code should be contain only english lowercase characters."
+            self.progress = "Language code should be at least 3 characters and contain only english lowercase characters."
         return
     # hide renpy panel    
     def destroy(self):
