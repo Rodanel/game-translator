@@ -402,44 +402,47 @@ class RenpyFrame(object):
                                 reallocation = path.join(_path, _name)
                                 if path.isfile(reallocation) and reallocation.endswith(".rpy"):
                                     self.progress = "Translating \""+reallocation+"\"..."
-                                    newtexts = ""
-                                    already_translated = False
                                     with open(reallocation, "r+") as tlfile:
                                         file_lines = tlfile.readlines()
                                         if file_lines[len(file_lines)-1].strip().startswith(translated_comment):
-                                            already_translated = True
+                                            self.progress = "Translation of \""+reallocation+"\" skipped. Because it's already translated!" 
                                         else:
-                                            for file_line in file_lines:
-                                                file_line = str(file_line)
-                                                file_line_stripped = file_line.strip()
-                                                if not file_line_stripped.startswith("#") and not file_line.startswith("translate ") and not file_line_stripped.startswith("old") and not len(file_line_stripped) == 0:
+                                            translatable_texts = {}
+                                            for file_line_i in range(len(file_lines)):
+                                                file_line_text = str(file_lines[file_line_i])
+                                                file_line_stripped = file_line_text.strip()
+                                                if not file_line_stripped.startswith("#") and not file_line_stripped.startswith("translate ") and not file_line_stripped.startswith("old") and not len(file_line_stripped) == 0:
                                                     p = re.compile('\\"(.*)\\"',)
-                                                    result = p.search(file_line)
+                                                    result = p.search(file_line_text)
                                                     if result is not None:
                                                         translate_text = result.group(1)
-                                                        print("Original: "+translate_text)
                                                         m = re.findall(r'\[.+?\]', translate_text)
                                                         variable_map = {}
                                                         for i in range(len(m)):
                                                             replaced_variable = "__["+str(i)+"]__"
                                                             variable_map[replaced_variable] = m[i]
                                                             translate_text = translate_text.replace(m[i], replaced_variable)
-                                                        translated = translator.translate(translate_text, dest = self.googleTranslateLanguageCode)
-                                                        translated_text = translated.text
-                                                        print("Translated: "+ translated_text)
-                                                        for key, value in variable_map.items():
-                                                            translated_text = translated_text.replace(key, value)
-                                                        print("Restored: "+ translated_text)
-                                                        file_line = file_line.replace("\""+result.group(1)+"\"", "\""+translated_text+"\"")
-                                                newtexts += file_line
+                                                        translatable_texts[file_line_i] = {}
+                                                        translatable_texts[file_line_i]["original"] = result.group(1)
+                                                        translatable_texts[file_line_i]["text"] = translate_text
+                                                        translatable_texts[file_line_i]["map"] = variable_map
+                                            if len(translatable_texts.keys()) > 0:
+                                                self.progress = "Connecting with google translate..."
+                                                translated = translator.translate([value["text"] for key,value in translatable_texts.items()], dest = self.googleTranslateLanguageCode)
+                                                self.progress = "Strings translated sucessfully!"
+                                                for tr_i in range(len(translated)):
+                                                    original_index = list(translatable_texts)[tr_i]
+                                                    original_value = list(translatable_texts.values())[tr_i]
+                                                    translated_text = translated[tr_i].text
+                                                    for key, value in original_value["map"].items():
+                                                        translated_text = translated_text.replace(key, value) 
+                                                    file_lines[original_index] = file_lines[original_index].replace(original_value["original"], translated_text)
+                                                with open(reallocation, "w") as tlfile2:
+                                                    tlfile2.write("".join(file_lines)+"\n"+translated_comment)
+                                                tlfile2.closed
+                                                self.progress = "Translation of \""+reallocation+"\" successfull!" 
                                     tlfile.closed
-                                    if already_translated:
-                                        self.progress = "Translation of \""+reallocation+"\" skipped. Because it's already translated!" 
-                                    else:
-                                        with open(reallocation, "w") as tlfile2:
-                                            tlfile2.write(newtexts+"\n"+translated_comment)
-                                        tlfile2.closed
-                                        self.progress = "Translation of \""+reallocation+"\" successfull!" 
+                                        
                         self.progress = "Translation completed! Please launch the game and check if has any error."
                     else:
                         self.progress =  "Translation folder \""+self.tlfilesdir+"\" not found!"
