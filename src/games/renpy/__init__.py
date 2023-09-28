@@ -408,8 +408,20 @@ class RenpyFrame(object):
                                                 p = re.compile('\\"(.*)\\"',)
                                                 result = p.search(line)
                                                 if result is not None:
-                                                    translated = translator.translate(result.group(1), dest = self.googleTranslateLanguageCode)
-                                                    line = line.replace("\""+result.group(1)+"\"", "\""+translated.text+"\""+translated_comment)
+                                                    translate_text = result.group(1)
+                                                    print("Original: "+translate_text)
+                                                    m = re.findall(r'\[.+?\]', translate_text)
+                                                    variable_map = {}
+                                                    for i in range(len(m)):
+                                                        variable_map["["+str(i)+"]"] = m[i]
+                                                        translate_text = translate_text.replace(m[i], "["+str(i)+"]")
+                                                    translated = translator.translate(translate_text, dest = self.googleTranslateLanguageCode)
+                                                    translated_text = translated.text
+                                                    print("Translated: "+ translated_text)
+                                                    for key, value in variable_map.items():
+                                                        translated_text = translated_text.replace(key, value)
+                                                    print("Restored: "+ translated_text)
+                                                    line = line.replace("\""+result.group(1)+"\"", "\""+translated_text+"\""+translated_comment)
                                             newtexts += line
                                     tlfile.closed
                                     with open(reallocation, "w") as tlfile2:
