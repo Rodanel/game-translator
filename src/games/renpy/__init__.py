@@ -7,7 +7,7 @@ import sys
 import random
 import string
 from googletrans import Translator
-import threading
+import traceback
 from tkinter import Tk, StringVar, BooleanVar, Frame, Label, Entry, Checkbutton, messagebox, scrolledtext, END, WORD, Button
 
 from src.games.detect_game import GameType
@@ -306,6 +306,7 @@ class RenpyFrame(object):
                         RpaEditor(fullpath, _extract=True, _version=2)
                         self.progress = "Extracted "+fname+" successfully!"
                     except Exception as e:
+                        print(traceback.format_exc())
                         error_text = "Could not extract \""+fname+"\" archive.\n\nError: "+str(e)
                         self.progress = error_text
                         messagebox.showerror("Could not extract archive", message=error_text)               
@@ -334,6 +335,7 @@ class RenpyFrame(object):
                 time.sleep(3)
                 self.progress = "Temp files removed successfully!"
             except Exception as e:
+                print(traceback.format_exc())
                 error_text = "Could not decompile rpyc files.\n\nError: "+str(e)
                 self.progress = error_text
                 messagebox.showerror("Could not decompile", message=error_text)
@@ -383,6 +385,7 @@ class RenpyFrame(object):
                     self.progress = fix_console(line)
             self.progress = "Genarated translation files successfully."
         except Exception as e:
+            print(traceback.format_exc())
             error_text = "Could not create translation files.\n\nError: "+str(e)
             self.progress = error_text
             messagebox.showerror("Could not create translation files.", message=error_text)
@@ -439,6 +442,7 @@ class RenpyFrame(object):
             else:
                 return True
         except Exception as e:
+            print(traceback.format_exc())
             error_text = "Translation failed!\n\nError: "+str(e)
             self.progress = error_text
             messagebox.showerror("Translation Failed!", message=error_text) 
@@ -474,6 +478,7 @@ class RenpyFrame(object):
                 lock_tl_file.close()
                 self.progress = "Language locked to "+self.languageName+" ("+self.languageFolderName+"). For unlocking just delete \""+locktlfile+"\" file."
             except Exception as e:
+                print(traceback.format_exc())
                 error_text = "Could not create translation lock file.\n\nError: "+str(e)
                 self.progress = error_text
                 messagebox.showerror("Could not create translation lock file.", message=error_text) 
