@@ -401,12 +401,13 @@ class RenpyFrame(object):
                                     self.progress = "Translating \""+reallocation+"\"..."
                                     newtexts = ""
                                     with open(reallocation, "r+") as tlfile:
-                                        lines = tlfile.readlines()
-                                        for line in lines:
-                                            line = str(line)
-                                            if not line.strip().startswith("#") and not line.startswith("translate ") and not line.strip().startswith("old") and not len(line.strip()) == 0 and not line.endswith(translated_comment):
+                                        file_lines = tlfile.readlines()
+                                        for file_line in file_lines:
+                                            file_line = str(file_line)
+                                            file_line_stripped = file_line.strip()
+                                            if not file_line_stripped.startswith("#") and not file_line.startswith("translate ") and not file_line_stripped.startswith("old") and not len(file_line_stripped) == 0 and not file_line_stripped.endswith(translated_comment):
                                                 p = re.compile('\\"(.*)\\"',)
-                                                result = p.search(line)
+                                                result = p.search(file_line)
                                                 if result is not None:
                                                     translate_text = result.group(1)
                                                     print("Original: "+translate_text)
@@ -421,8 +422,8 @@ class RenpyFrame(object):
                                                     for key, value in variable_map.items():
                                                         translated_text = translated_text.replace(key, value)
                                                     print("Restored: "+ translated_text)
-                                                    line = line.replace("\""+result.group(1)+"\"", "\""+translated_text+"\""+translated_comment)
-                                            newtexts += line
+                                                    file_line = file_line.replace("\""+result.group(1)+"\"", "\""+translated_text+"\""+translated_comment)
+                                            newtexts += file_line
                                     tlfile.closed
                                     with open(reallocation, "w") as tlfile2:
                                         tlfile2.write(newtexts)
@@ -438,7 +439,7 @@ class RenpyFrame(object):
             else:
                 return True
         except Exception as e:
-            error_text = "Translation failed!.\n\nError: "+str(e)
+            error_text = "Translation failed!\n\nError: "+str(e)
             self.progress = error_text
             messagebox.showerror("Translation Failed!", message=error_text) 
             return False
