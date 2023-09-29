@@ -11,14 +11,14 @@ import string
 import googletrans
 from googletrans import Translator
 import traceback
-from tkinter import Tk, StringVar, BooleanVar, Frame, Label, Entry, Checkbutton, messagebox, scrolledtext, END, WORD, ttk
+from tkinter import Tk, StringVar, BooleanVar, Frame, Label, Entry, Checkbutton, messagebox, scrolledtext, END, WORD, ttk, Button
 
 from src.games.detect_game import GameType
 from src.games.renpy.rpa import RpaEditor
 from src.games.renpy.unrpyc import unren_content
 from src.style.frame import set_frame_attrs
 from src.settings import settings, Settings
-from src.style.buttons import enabledButtonColor, toggle_button_state
+from src.style.buttons import enabledButtonColor, disabledButtonColor, enabledRedButtonColor, disabledRedButtonColor, toggle_button_state
 
 CREATE_NO_WINDOW = 0x08000000
 
@@ -112,6 +112,30 @@ class RenpyFrame(object):
         self.__extractRpaArchivesCheck__ = Checkbutton(self.__frame__, text= "Extract RPA archives.", variable=self.__extractRpaArchives__, onvalue=True, offvalue=False)
         self.__extractRpaArchivesCheck__.pack(side="top", fill="x", anchor="n")
         self.__extractRpaArchivesCheck__.select()
+
+        self.__ignoredRpaFilesFrame__ = Frame(self.__frame__)
+        self.__ignoredRpaFilesFrame__.pack(side="top", fill="x", anchor="n")
+        self.__ignoredRpaFile__ = StringVar()
+        self.__ignoredRpaFilesCombobox__ = ttk.Combobox(self.__ignoredRpaFilesFrame__, textvariable=self.__ignoredRpaFile__)
+        _rpaFiles = [path.basename(fname) for fname in listdir(self.gamedir) if fname.endswith(".rpa")]
+        self.__ignoredRpaFilesCombobox__.pack(side="left", fill="x", anchor="w", expand=True)
+        self.__ignoredRpaFilesCombobox__["values"] = _rpaFiles
+        self.__ignoredRpaFilesCombobox__["state"] = "readonly"
+        if len(_rpaFiles) > 0:
+            self.__ignoredRpaFile__.set(_rpaFiles[0])
+        self.__ignoredRpaFileText__ = StringVar()
+        self.__ignoredRpaFileListLabel__ = Label(self.__frame__, textvariable=self.__ignoredRpaFileText__)
+        self.__ignoredRpaFileListLabel__.pack(side="top", fill="x", anchor="n")
+        
+        self.__ignoredRpaFilesRemoveButton__ = Button(self.__ignoredRpaFilesFrame__, text="Remove", background=enabledRedButtonColor, disabledforeground="white", foreground="white", command=self.__remove_IgnoredRPAFile)
+        self.__ignoredRpaFilesRemoveButton__.pack(side="right")
+        self.__ignoredRpaFilesMargin1__ = Frame(self.__ignoredRpaFilesFrame__, width=2)
+        self.__ignoredRpaFilesMargin1__.pack(side="right")
+        self.__ignoredRpaFilesAddButton__ = Button(self.__ignoredRpaFilesFrame__, text="Add", background=enabledButtonColor, disabledforeground="white", foreground="white", command=self.__add_IgnoredRPAFile)
+        self.__ignoredRpaFilesAddButton__.pack(side="right")
+        self.__ignoredRpaFilesMargin2__ = Frame(self.__ignoredRpaFilesFrame__, width=2)
+        self.__ignoredRpaFilesMargin2__.pack(side="right")
+
         self.__decompileRpycFiles__ = BooleanVar()
         self.__decompileRpycFilesCheck__ = Checkbutton(self.__frame__, text= "Decompile RPYC files.", variable=self.__decompileRpycFiles__, onvalue=True, offvalue=False)
         self.__decompileRpycFilesCheck__.pack(side="top", fill="x", anchor="n")
@@ -169,6 +193,9 @@ class RenpyFrame(object):
     def extractRpaArchives(self) -> bool:
         return self.__extractRpaArchives__.get()
     @property
+    def ignoredRpaFile(self):
+        return self.__ignoredRpaFile__.get()
+    @property
     def decompileRpycFiles(self) -> bool:
         return self.__decompileRpycFiles__.get()
     @property
@@ -210,6 +237,49 @@ class RenpyFrame(object):
         self.__save_setting(Settings.LOCK_LOCALIZATION, self.__lockLocalization__)
     def __save_extractRpaArchives(self, *args):
         self.__save_setting(Settings.EXTRACT_RPA, self.__extractRpaArchives__)
+        self.__update_ignoreRpafilesState()
+    def __update_ignoreRpafilesState(self, disabled:bool= False):
+        if disabled:
+            self.__ignoredRpaFilesCombobox__["state"] = "disabled"
+            self.__ignoredRpaFilesAddButton__["state"] = "disabled"
+            self.__ignoredRpaFilesAddButton__["background"] = disabledButtonColor
+            self.__ignoredRpaFilesRemoveButton__["state"] = "disabled"
+            self.__ignoredRpaFilesRemoveButton__["background"] = disabledRedButtonColor
+            self.__ignoredRpaFileListLabel__["state"] = "disabled"
+        else:
+            self.__ignoredRpaFilesCombobox__["state"] = "readonly" if self.extractRpaArchives else "disabled"
+            self.__ignoredRpaFilesRemoveButton__["state"] = "normal" if self.extractRpaArchives else "disabled"
+            self.__ignoredRpaFilesAddButton__["background"] = enabledButtonColor if self.extractRpaArchives else disabledButtonColor
+            self.__ignoredRpaFilesRemoveButton__["state"] = "normal" if self.extractRpaArchives else "disabled"
+            self.__ignoredRpaFilesRemoveButton__["background"] = enabledRedButtonColor if self.extractRpaArchives else disabledRedButtonColor
+            self.__ignoredRpaFileListLabel__["state"] = "normal" if self.extractRpaArchives else "disabled"
+    def __restore_ignoredRpaFiles(self):
+        _files = self.__get_ignored_files()
+        _rpaFilesText = ", ".join(_files) if len(_files) > 0 else "No file added."
+        self.__ignoredRpaFileText__.set("Ignored RPA Archives: "+_rpaFilesText)
+    def __add_IgnoredRPAFile(self):
+        if len(self.ignoredRpaFile) > 0:
+            _files = self.__get_ignored_files()
+            if self.ignoredRpaFile not in _files:
+                _files.append(self.ignoredRpaFile)
+                settings.updateGame(GameType.RENPY, self.filename, {Settings.IGNORED_RPA_FILES: _files})
+                self.__restore_ignoredRpaFiles()
+    def __remove_IgnoredRPAFile(self):
+        if len(self.ignoredRpaFile) > 0:
+            _files = self.__get_ignored_files()
+            if self.ignoredRpaFile in _files:
+                _files.remove(self.ignoredRpaFile)
+                settings.updateGame(GameType.RENPY, self.filename, {Settings.IGNORED_RPA_FILES: _files})
+                self.__restore_ignoredRpaFiles()
+    def __get_ignored_files(self):
+        _files = []
+        try:
+            defaultSettings = Settings.getDefault(GameType.RENPY)
+            gameSettings = settings.data[str(GameType.RENPY)][self.filename]
+            _files = gameSettings[Settings.IGNORED_RPA_FILES] if Settings.IGNORED_RPA_FILES in gameSettings else defaultSettings[Settings.IGNORED_RPA_FILES]
+        except:
+            pass
+        return _files
     def __save_decompileRpycFiles(self, *args):
         self.__save_setting(Settings.DECOMPİLE_RPYC, self.__decompileRpycFiles__)
     def __save_forceRegenerateTranslation(self, *args):
@@ -229,14 +299,13 @@ class RenpyFrame(object):
         self.__languageFolderNameEntry__["state"] = "disabled" if disabled else "normal"
         self.__lockLocalizationCheck__["state"] = "disabled" if disabled else "normal"
         self.__extractRpaArchivesCheck__["state"] = "disabled" if disabled else "normal"
-        self.__decompileRpycFilesCheck__["state"] = "disabled" if disabled else "normal"
+        self.__update_ignoreRpafilesState(disabled)
         self.__forceRegenerateTranslationCheck__["state"] = "disabled" if disabled else "normal"
         self.__translateWithGoogleTranslateCheck__["state"] = "disabled" if disabled else "normal"
         if disabled:
             self.__googleTranslateLanguageCombobox__["state"] = "disabled"
         else:
             self.__update_googleTranslateLanguageState()
-        print("")
 
     def __save_setting(self, propType, prop):
         settings.updateGame(GameType.RENPY, self.filename, {propType: prop.get()})
@@ -261,6 +330,9 @@ class RenpyFrame(object):
 
         self.__restore_setting(Settings.EXTRACT_RPA, self.__extractRpaArchives__)
         self.__extractRpaArchives__.trace_add("write", self.__save_extractRpaArchives)
+        
+        self.__restore_ignoredRpaFiles()
+        self.__update_ignoreRpafilesState()
 
         self.__restore_setting(Settings.DECOMPİLE_RPYC, self.__decompileRpycFiles__)
         self.__decompileRpycFiles__.trace_add("write", self.__save_decompileRpycFiles)
@@ -327,26 +399,30 @@ class RenpyFrame(object):
     def __extract_rpa_archives(self):
         if self.cancelled:
             return True
+        _ignoredFiles = self.__get_ignored_files()
         if self.extractRpaArchives:
             for fname in listdir(self.gamedir):
                 if self.cancelled:
                     return True
                 fullpath = path.join(self.gamedir, fname)
                 if fname.endswith(".rpa"):
-                    try:
-                        self.progress = "Extracting "+fname+"..."
-                        print("Exracting "+fname+"...")
-                        self.__rpaeditor__ = RpaEditor(fullpath, _extract=True, _version=2)
-                        self.__rpaeditor__.start()
-                        if self.cancelled:
-                            return True
-                        self.progress = "Extracted "+fname+" successfully!"
-                    except Exception as e:
-                        print(traceback.format_exc())
-                        error_text = "Could not extract \""+fname+"\" archive.\n\nError: "+str(e)
-                        self.progress = error_text
-                        messagebox.showerror("Could not extract archive", message=error_text)               
-                        return False
+                    if path.basename(fname) not in _ignoredFiles:
+                        try:
+                            self.progress = "Extracting "+fname+"..."
+                            print("Exracting "+fname+"...")
+                            self.__rpaeditor__ = RpaEditor(fullpath, _extract=True, _version=2)
+                            self.__rpaeditor__.start()
+                            if self.cancelled:
+                                return True
+                            self.progress = "Extracted "+fname+" successfully!"
+                        except Exception as e:
+                            print(traceback.format_exc())
+                            error_text = "Could not extract \""+fname+"\" archive.\n\nError: "+str(e)
+                            self.progress = error_text
+                            messagebox.showerror("Could not extract archive", message=error_text)               
+                            return False
+                    else:
+                        self.progress = "Ignored "+fname+"..."
         else:
             self.progress = "Extracting rpa archives skipped."
         return True

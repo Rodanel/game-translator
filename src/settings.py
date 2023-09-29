@@ -8,6 +8,7 @@ class Settings(object):
     LANGUAGE_FOLDER_NAME = "languageFolderName"
     LOCK_LOCALIZATION = "lockLocalization"
     EXTRACT_RPA = "extractRpaFiles"
+    IGNORED_RPA_FILES = "ignoredRPAFiles"
     DECOMPİLE_RPYC = "decompileRpycFiles"
     FORCE_REGENERATE_TRANSLATION_FILES = "forceRegenerateTranslationFiles"
     TRANSLATE_WITH_GOOGLE_TRANSLATE = "translateWithGoogleTranslate"
@@ -21,6 +22,7 @@ class Settings(object):
                 Settings.LANGUAGE_FOLDER_NAME: "",
                 Settings.LOCK_LOCALIZATION: False,
                 Settings.EXTRACT_RPA: True,
+                Settings.IGNORED_RPA_FILES: [],
                 Settings.DECOMPİLE_RPYC: True,
                 Settings.FORCE_REGENERATE_TRANSLATION_FILES: False,
                 Settings.TRANSLATE_WITH_GOOGLE_TRANSLATE: False,
