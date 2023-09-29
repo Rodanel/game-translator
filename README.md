@@ -8,10 +8,10 @@
 
 ## Building
 
-- Install pyinstaller
+- Install requirements
 
 ```
-pip install -U pyinstaller
+pip install -r requirements.txt
 ```
 
 - Build
