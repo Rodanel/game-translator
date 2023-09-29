@@ -149,13 +149,13 @@ class RenpyFrame(object):
         self.__translateWithGoogleTranslateCheck__ = Checkbutton(self.__frame__, text= "Translate with Google Translate.", variable=self.__translateWithGoogleTranslate__, onvalue=True, offvalue=False)
         self.__translateWithGoogleTranslateCheck__.pack(side="top", fill="x")
         self.__googleTranslateFrame__ = Frame(self.__frame__)
-        self.__googleTranslateFrame__.pack(side="top", fill="x", anchor="n")
+        self.__googleTranslateFrame__.pack(side="top", anchor="c")
         self.__googleTranslateLanguageLabel__ = Label(self.__googleTranslateFrame__, text="Translate to:")
-        self.__googleTranslateLanguageLabel__.pack(side="left", anchor="e")
+        self.__googleTranslateLanguageLabel__.pack(side="left")
         self.__googleTranslateLanguage__ = StringVar()
-        self.__googleTranslateLanguageCombobox__ = ttk.Combobox(self.__googleTranslateFrame__, textvariable=self.__googleTranslateLanguage__, width=tb_width)
+        self.__googleTranslateLanguageCombobox__ = ttk.Combobox(self.__googleTranslateFrame__, textvariable=self.__googleTranslateLanguage__)
         self.__googleTranslateLanguageCombobox__["values"] = [key.capitalize() for key, value in googletrans.LANGCODES.items()]
-        self.__googleTranslateLanguageCombobox__.pack(side="right")
+        self.__googleTranslateLanguageCombobox__.pack(side="left")
         self.__googleTranslateLanguageCombobox__["state"] = "disabled"
 
         self.__progressText__ = scrolledtext.ScrolledText(self.__frame__, wrap=WORD, state="disabled")
