@@ -681,6 +681,7 @@ class RenpyFrame(object):
                     if self.cancelled:
                         self.progress = "Translation cancelled by user!"
                     #self.stop_loading()
+                    self.clear_temp_rpyc_decompilers()
                     self.__disable_all_controls(False)
                     self.save_progress()
                     if not self.cancelled and not error_occurred:
