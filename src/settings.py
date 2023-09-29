@@ -9,6 +9,7 @@ class Settings(object):
     LOCK_LOCALIZATION = "lockLocalization"
     EXTRACT_RPA = "extractRpaFiles"
     DECOMPİLE_RPYC = "decompileRpycFiles"
+    FORCE_REGENERATE_TRANSLATION_FILES = "forceRegenerateTranslationFiles"
     TRANSLATE_WITH_GOOGLE_TRANSLATE = "translateWithGoogleTranslate"
     GOOGLE_TRANSLATE_LANGUAGE_CODE = "googleTranslateLanguageCode"
 
@@ -21,6 +22,7 @@ class Settings(object):
                 Settings.LOCK_LOCALIZATION: False,
                 Settings.EXTRACT_RPA: True,
                 Settings.DECOMPİLE_RPYC: True,
+                Settings.FORCE_REGENERATE_TRANSLATION_FILES: False,
                 Settings.TRANSLATE_WITH_GOOGLE_TRANSLATE: False,
                 Settings.GOOGLE_TRANSLATE_LANGUAGE_CODE: "",
             }

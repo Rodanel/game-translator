@@ -116,6 +116,10 @@ class RenpyFrame(object):
         self.__decompileRpycFilesCheck__ = Checkbutton(self.__frame__, text= "Decompile RPYC files.", variable=self.__decompileRpycFiles__, onvalue=True, offvalue=False)
         self.__decompileRpycFilesCheck__.pack(side="top", fill="x", anchor="n")
         self.__decompileRpycFilesCheck__.select()
+
+        self.__forceRegenerateTranslation__ = BooleanVar()
+        self.__forceRegenerateTranslationCheck__ = Checkbutton(self.__frame__, text= "Force Regenerate Translation Files. (Adds only missing translations.)", variable=self.__forceRegenerateTranslation__, onvalue=True, offvalue=False, wraplength=wrap_length)
+        self.__forceRegenerateTranslationCheck__.pack(side="top", fill="x", anchor="n")
         
         self.__translateWithGoogleTranslate__ = BooleanVar()
         self.__translateWithGoogleTranslateCheck__ = Checkbutton(self.__frame__, text= "Translate with Google Translate.", variable=self.__translateWithGoogleTranslate__, onvalue=True, offvalue=False)
@@ -168,6 +172,9 @@ class RenpyFrame(object):
     def decompileRpycFiles(self) -> bool:
         return self.__decompileRpycFiles__.get()
     @property
+    def forceRegenerateTranslation(self) -> bool:
+        return self.__forceRegenerateTranslation__
+    @property
     def lockLocalization(self) -> bool:
         return self.__lockLocalization__.get()
     @property
@@ -205,6 +212,8 @@ class RenpyFrame(object):
         self.__save_setting(Settings.EXTRACT_RPA, self.__extractRpaArchives__)
     def __save_decompileRpycFiles(self, *args):
         self.__save_setting(Settings.DECOMPİLE_RPYC, self.__decompileRpycFiles__)
+    def __save_forceRegenerateTranslation(self, *args):
+        self.__save_setting(Settings.FORCE_REGENERATE_TRANSLATION_FILES, self.__forceRegenerateTranslation__)
     def __save_translateWithGoogleTranslate(self, *args):
         self.__save_setting(Settings.TRANSLATE_WITH_GOOGLE_TRANSLATE, self.__translateWithGoogleTranslate__)
         self.__update_googleTranslateLanguageState()
@@ -221,6 +230,7 @@ class RenpyFrame(object):
         self.__lockLocalizationCheck__["state"] = "disabled" if disabled else "normal"
         self.__extractRpaArchivesCheck__["state"] = "disabled" if disabled else "normal"
         self.__decompileRpycFilesCheck__["state"] = "disabled" if disabled else "normal"
+        self.__forceRegenerateTranslationCheck__["state"] = "disabled" if disabled else "normal"
         self.__translateWithGoogleTranslateCheck__["state"] = "disabled" if disabled else "normal"
         if disabled:
             self.__googleTranslateLanguageCombobox__["state"] = "disabled"
@@ -254,6 +264,9 @@ class RenpyFrame(object):
 
         self.__restore_setting(Settings.DECOMPİLE_RPYC, self.__decompileRpycFiles__)
         self.__decompileRpycFiles__.trace_add("write", self.__save_decompileRpycFiles)
+
+        self.__restore_setting(Settings.FORCE_REGENERATE_TRANSLATION_FILES, self.__forceRegenerateTranslation__)
+        self.__forceRegenerateTranslation__.trace_add("write", self.__save_forceRegenerateTranslation)
 
         self.__restore_setting(Settings.TRANSLATE_WITH_GOOGLE_TRANSLATE, self.__translateWithGoogleTranslate__)
         self.__translateWithGoogleTranslate__.trace_add("write", self.__save_translateWithGoogleTranslate)
@@ -375,47 +388,53 @@ class RenpyFrame(object):
         if self.cancelled:
             return True
         try:
-            self.progress = "Genarating translation files..."
-            executable_path = path.dirname(fsdecode(self.filename))
-            game_extension = ".exe" if self.filename.endswith(".exe") else ""
-            executables = [ "python"+game_extension]
-            executables.append(self.filename)
-            for i in executables:
-                executable = path.join(executable_path, i)
-                if path.exists(executable):
-                    break
+            if path.exists(self.tlfilesdir) and not self.forceRegenerateTranslation:
+                self.progress = "Generation of translation files skipped, because translation folder already exists and force regenerate is disabled."
             else:
-                raise Exception("Python interpreter not found: %r", executables)
-            cmd = [ executable, "-EO", sys.argv[0] ]
-            args = [ "translate", self.languageFolderName ]
-            cmd.append(self.dirname)
-            cmd.extend(args)
+                if self.forceRegenerateTranslation:
+                    self.progress = "Regenerating translation files..."
+                else:
+                    self.progress = "Generating translation files..."
+                executable_path = path.dirname(fsdecode(self.filename))
+                game_extension = ".exe" if self.filename.endswith(".exe") else ""
+                executables = [ "python"+game_extension]
+                executables.append(self.filename)
+                for i in executables:
+                    executable = path.join(executable_path, i)
+                    if path.exists(executable):
+                        break
+                else:
+                    raise Exception("Python interpreter not found: %r", executables)
+                cmd = [ executable, "-EO", sys.argv[0] ]
+                args = [ "translate", self.languageFolderName ]
+                cmd.append(self.dirname)
+                cmd.extend(args)
 
-            environ = dict(myenv)
-            environ.update({})
+                environ = dict(myenv)
+                environ.update({})
 
-            encoded_environ = { }
+                encoded_environ = { }
 
-            for k, v in environ.items():
-                if v is None:
-                    continue
+                for k, v in environ.items():
+                    if v is None:
+                        continue
 
-                encoded_environ[str(k)] = str(v)
+                    encoded_environ[str(k)] = str(v)
 
-            # Launch the project.
-            cmd = [ str(i) for i in cmd ]
-            if self.cancelled:
-                return True
-            self.__generateTranslationProcess__ = subprocess.Popen(cmd, stdout=subprocess.PIPE, bufsize=1, creationflags=CREATE_NO_WINDOW,env=encoded_environ)
-            while True:
+                # Launch the project.
+                cmd = [ str(i) for i in cmd ]
                 if self.cancelled:
                     return True
-                line = self.__generateTranslationProcess__.stdout.readline()
-                if not line:
-                    break
-                else:
-                    self.progress = fix_console(line)
-            self.progress = "Genarated translation files successfully."
+                self.__generateTranslationProcess__ = subprocess.Popen(cmd, stdout=subprocess.PIPE, bufsize=1, creationflags=CREATE_NO_WINDOW,env=encoded_environ)
+                while True:
+                    if self.cancelled:
+                        return True
+                    line = self.__generateTranslationProcess__.stdout.readline()
+                    if not line:
+                        break
+                    else:
+                        self.progress = fix_console(line)
+                self.progress = "Generated translation files successfully."
         except Exception as e:
             print(traceback.format_exc())
             error_text = "Could not create translation files.\n\nError: "+str(e)
