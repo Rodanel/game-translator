@@ -124,7 +124,7 @@ class RenpyFrame(object):
         if len(_rpaFiles) > 0:
             self.__ignoredRpaFile__.set(_rpaFiles[0])
         self.__ignoredRpaFileText__ = StringVar()
-        self.__ignoredRpaFileListLabel__ = Label(self.__frame__, textvariable=self.__ignoredRpaFileText__)
+        self.__ignoredRpaFileListLabel__ = Label(self.__frame__, textvariable=self.__ignoredRpaFileText__, wraplength=wrap_length)
         self.__ignoredRpaFileListLabel__.pack(side="top", fill="x", anchor="n")
         
         self.__ignoredRpaFilesRemoveButton__ = Button(self.__ignoredRpaFilesFrame__, text="Remove", background=enabledRedButtonColor, disabledforeground="white", foreground="white", command=self.__remove_IgnoredRPAFile)
@@ -248,7 +248,7 @@ class RenpyFrame(object):
             self.__ignoredRpaFileListLabel__["state"] = "disabled"
         else:
             self.__ignoredRpaFilesCombobox__["state"] = "readonly" if self.extractRpaArchives else "disabled"
-            self.__ignoredRpaFilesRemoveButton__["state"] = "normal" if self.extractRpaArchives else "disabled"
+            self.__ignoredRpaFilesAddButton__["state"] = "normal" if self.extractRpaArchives else "disabled"
             self.__ignoredRpaFilesAddButton__["background"] = enabledButtonColor if self.extractRpaArchives else disabledButtonColor
             self.__ignoredRpaFilesRemoveButton__["state"] = "normal" if self.extractRpaArchives else "disabled"
             self.__ignoredRpaFilesRemoveButton__["background"] = enabledRedButtonColor if self.extractRpaArchives else disabledRedButtonColor
@@ -289,23 +289,25 @@ class RenpyFrame(object):
         self.__update_googleTranslateLanguageState()
     def __save_googleTranslateLanguage(self, *args):
         self.__save_setting(Settings.GOOGLE_TRANSLATE_LANGUAGE_CODE, self.__googleTranslateLanguage__)
-    def __update_googleTranslateLanguageState(self):
-        if self.translatewithGoogleTranslate:
-            self.__googleTranslateLanguageCombobox__["state"] = "readonly"
-        else:
+    def __update_googleTranslateLanguageState(self, disabled:bool= False):
+        if disabled:
+            self.__googleTranslateLanguageLabel__["state"] = "disabled"
             self.__googleTranslateLanguageCombobox__["state"] = "disabled"
+        else:
+            self.__googleTranslateLanguageLabel__["state"] = "normal" if self.translatewithGoogleTranslate else "disabled"
+            self.__googleTranslateLanguageCombobox__["state"] = "readonly" if self.translatewithGoogleTranslate else "disabled"
     def __disable_all_controls(self, disabled: bool = True):
+        self.__languageNameLabel__["state"] = "disabled" if disabled else "normal"
         self.__languageNameEntry__["state"] = "disabled" if disabled else "normal"
+        self.__languageFolderNameLabel__["state"] = "disabled" if disabled else "normal"
         self.__languageFolderNameEntry__["state"] = "disabled" if disabled else "normal"
         self.__lockLocalizationCheck__["state"] = "disabled" if disabled else "normal"
         self.__extractRpaArchivesCheck__["state"] = "disabled" if disabled else "normal"
         self.__update_ignoreRpafilesState(disabled)
+        self.__decompileRpycFilesCheck__["state"] = "disabled" if disabled else "normal"
         self.__forceRegenerateTranslationCheck__["state"] = "disabled" if disabled else "normal"
         self.__translateWithGoogleTranslateCheck__["state"] = "disabled" if disabled else "normal"
-        if disabled:
-            self.__googleTranslateLanguageCombobox__["state"] = "disabled"
-        else:
-            self.__update_googleTranslateLanguageState()
+        self.__update_googleTranslateLanguageState(disabled)
 
     def __save_setting(self, propType, prop):
         settings.updateGame(GameType.RENPY, self.filename, {propType: prop.get()})
