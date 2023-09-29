@@ -581,7 +581,7 @@ class RenpyFrame(object):
                                             translated_text = translated[tr_i].text
                                             for key, value in original_value["map"].items():
                                                 translated_text = translated_text.replace(key, value) 
-                                            file_lines[original_index] = file_lines[original_index].replace(original_value["original"], translated_text.replace("\"", "\\\""))
+                                            file_lines[original_index] = file_lines[original_index].replace(original_value["original"], translated_text.replace("\"", "\\\"").replace("\\\\\"","\\\"").replace("\n", "\\n"))
                                         with open(reallocation, "w") as tlfile2:
                                             tlfile2.write("".join(file_lines)+"\n"+translated_comment)
                                         tlfile2.closed
