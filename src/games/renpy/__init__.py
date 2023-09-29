@@ -1,5 +1,6 @@
 import os
 from os import path, listdir, remove, rmdir, environ as myenv, mkdir, walk
+import zipfile
 import signal
 import re
 import subprocess
@@ -714,3 +715,37 @@ class RenpyFrame(object):
                 self.__decompileRpycProcess__ = None
             except Exception as e:
                 print(traceback.format_exc())
+    def get_zip_name(self, _dirname, _exname,n:int=0):
+        _exnamenew = _exname + "-tl"
+        distdir =  path.join(_dirname, "dist")
+        arhivepath = path.join(distdir, _exnamenew+".zip" if n==0 else _exnamenew+"("+str(n)+").zip")
+        if path.exists(arhivepath):
+            return self.get_zip_name(_dirname, _exname, n+1)
+        else:
+            return arhivepath
+    def archive(self):
+        try:
+            self.clearProgress()
+            bname = path.basename(self.filename)
+            gname = path.splitext(bname)[0]
+            arhivepath = self.get_zip_name(self.dirname, gname)
+            dname = path.dirname(arhivepath)
+            self.progress = "Started generating a zip archive in \""+arhivepath+"\"..."
+            if not path.isdir(dname):
+                mkdir(dname)
+            zipobj = zipfile.ZipFile(arhivepath, 'w', zipfile.ZIP_DEFLATED)
+            rootlen = len(self.gamedir) + 1
+            for base, dirs, files in walk(self.gamedir):
+                for file in files:
+                    fn = path.join(base, file)
+                    if fn.endswith(".rpy") or fn.endswith(".rpyc") or fn.startswith(self.tldir):
+                        zipobj.write(fn, path.join("game", fn[rootlen:]))
+                        self.progress = "Added \""+fn+"\" file to archive."
+            self.progress = ""
+            self.progress = "Creating archive completed!"
+        except Exception as e:
+            print(traceback.format_exc())
+            error_text = "Archive could not be created!\n\nError: "+str(e)
+            self.progress = error_text
+            messagebox.showerror("Can not Create an Archive", message=error_text)
+        self.save_progress()

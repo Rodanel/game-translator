@@ -58,6 +58,7 @@ def browse_game():
     if gameType != GameType.NONE and gameType != GameType.EMPTY:
         settings.addDefaultGameSettingsIFNotExists(gameType, filename)
         toggle_button_state(startButton, "normal")
+        toggle_button_state(zipButton, "normal")
     else:
         toggle_button_state(startButton, "disabled")
     showFrame()
@@ -98,13 +99,36 @@ def start_translation():
     start_translation_thread.daemon = True
     start_translation_thread.start()
 
+
+def zip_game():
+    if gameType == GameType.RENPY and renpyFrame is not None:
+        try:
+            toggle_button_state(zipButton, "disabled")
+            renpyFrame.archive()
+            toggle_button_state(zipButton, "normal")
+        except:
+            toggle_button_state(zipButton, "normal")
+            print(traceback.format_exc())
+    pass
+
+def start_zipping():
+    start_zipping_thread = threading.Thread(target=zip_game)
+    start_zipping_thread.daemon = True
+    start_zipping_thread.start()
 # buttons
+
+zipButton = Button(root, text="Create an Archive (.zip)", background=enabledButtonColor, foreground="white", disabledforeground="white", command=lambda:start_zipping())
+zipButton.pack(side=BOTTOM, fill=X)
+toggle_button_state(zipButton, "disabled")
+
+margin1 = Frame(root, height=5)
+margin1.pack(side=BOTTOM, fill=X)
 
 startButton = Button(root, text="Start", background=enabledButtonColor, foreground="white", disabledforeground="white", command=lambda:start_translation())
 startButton.pack(side=BOTTOM, fill=X)
 
-margin1 = Frame(root, height=5)
-margin1.pack(side=BOTTOM, fill=X)
+margin2 = Frame(root, height=5)
+margin2.pack(side=BOTTOM, fill=X)
 
 browseButton = Button(root, text="Browse", background=enabledButtonColor, foreground="white", disabledforeground="white", command=browse_game)
 browseButton.pack(side=BOTTOM, fill=X)
