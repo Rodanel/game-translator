@@ -147,7 +147,7 @@ class RenpyFrame(object):
         self.__forceRegenerateTranslationCheck__.pack(side="top", fill="x", anchor="n")
         
         self.__translateWithGoogleTranslate__ = BooleanVar()
-        self.__translateWithGoogleTranslateCheck__ = Checkbutton(self.__frame__, text= "Translate with Google Translate.", variable=self.__translateWithGoogleTranslate__, onvalue=True, offvalue=False)
+        self.__translateWithGoogleTranslateCheck__ = Checkbutton(self.__frame__, text= "Translate with Google Translate (Experimental).", variable=self.__translateWithGoogleTranslate__, onvalue=True, offvalue=False)
         self.__translateWithGoogleTranslateCheck__.pack(side="top", fill="x")
         self.__googleTranslateFrame__ = Frame(self.__frame__)
         self.__googleTranslateFrame__.pack(side="top", anchor="c")
