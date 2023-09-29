@@ -2,7 +2,7 @@ from tkinter import *
 from tkinter import filedialog, messagebox
 from os import getcwd
 import threading
-
+import traceback
 from src.style.buttons import enabledButtonColor, toggle_button_state
 from src.style.frame import set_frame_attrs
 from src.games import renpy
@@ -69,7 +69,12 @@ def translate():
     if started:
         if gameType == GameType.RENPY and renpyFrame is not None:
             started = False
-            renpyFrame.cancel()
+            try:
+                toggle_button_state(startButton, "disabled")
+                renpyFrame.cancel()
+            except:
+                toggle_button_state(startButton, "normal")
+                print(traceback.format_exc())
     else:
         if gameType == GameType.RENPY and renpyFrame is not None:
             try:
@@ -79,10 +84,12 @@ def translate():
                 renpyFrame.generate_translation()
                 startButton["text"] = "Start"
                 toggle_button_state(browseButton, "normal")
+                toggle_button_state(startButton, "normal")
             except Exception as e:
                 messagebox.showerror(title="Error", message=str(e))
                 startButton["text"] = "Start"
                 toggle_button_state(browseButton, "normal")
+                toggle_button_state(startButton, "normal")
             started = False
         elif gameType == GameType.NONE:
             messagebox.showwarning(title="Not a supported game", message="This is not a supported game!\n\n"+filename)

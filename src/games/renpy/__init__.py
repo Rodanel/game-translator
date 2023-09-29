@@ -584,8 +584,8 @@ class RenpyFrame(object):
         self = None
         self.cancel()
     def cancel(self):
-        self.progress = "Cancelling translation..."
-        self.progress = "It can take long according to background processes..."
+        self.progress = "Cancelling translation. It can take long according to background processes..."
+        self.progress = ""
         self.__cancelled__ = True
         if self.__rpaeditor__ is not None:
             self.__rpaeditor__.cancel()
