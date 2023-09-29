@@ -8,9 +8,10 @@ from datetime import datetime
 import sys
 import random
 import string
+import googletrans
 from googletrans import Translator
 import traceback
-from tkinter import Tk, StringVar, BooleanVar, Frame, Label, Entry, Checkbutton, messagebox, scrolledtext, END, WORD, Button
+from tkinter import Tk, StringVar, BooleanVar, Frame, Label, Entry, Checkbutton, messagebox, scrolledtext, END, WORD, ttk
 
 from src.games.detect_game import GameType
 from src.games.renpy.rpa import RpaEditor
@@ -121,12 +122,13 @@ class RenpyFrame(object):
         self.__translateWithGoogleTranslateCheck__.pack(side="top", fill="x")
         self.__googleTranslateFrame__ = Frame(self.__frame__)
         self.__googleTranslateFrame__.pack(side="top", fill="x", anchor="n")
-        self.__googleTranslateLanguageCodeLabel__ = Label(self.__googleTranslateFrame__, text="Google Translate Language Code:")
-        self.__googleTranslateLanguageCodeLabel__.pack(side="left", anchor="e")
-        self.__googleTranslateLanguageCode__ = StringVar()
-        self.__googleTranslateLanguageCodeEntry__ = Entry(self.__googleTranslateFrame__, textvariable=self.__googleTranslateLanguageCode__, width=tb_width)
-        self.__googleTranslateLanguageCodeEntry__.pack(side="right")
-        self.__googleTranslateLanguageCodeEntry__["state"] = "disabled"
+        self.__googleTranslateLanguageLabel__ = Label(self.__googleTranslateFrame__, text="Translate to:")
+        self.__googleTranslateLanguageLabel__.pack(side="left", anchor="e")
+        self.__googleTranslateLanguage__ = StringVar()
+        self.__googleTranslateLanguageCombobox__ = ttk.Combobox(self.__googleTranslateFrame__, textvariable=self.__googleTranslateLanguage__, width=tb_width)
+        self.__googleTranslateLanguageCombobox__["values"] = [key.capitalize() for key, value in googletrans.LANGCODES.items()]
+        self.__googleTranslateLanguageCombobox__.pack(side="right")
+        self.__googleTranslateLanguageCombobox__["state"] = "disabled"
 
         self.__progressText__ = scrolledtext.ScrolledText(self.__frame__, wrap=WORD, state="disabled")
         self.__progressText__.pack(side="top", fill="both", expand=True)
@@ -172,8 +174,8 @@ class RenpyFrame(object):
     def translatewithGoogleTranslate(self) -> bool:
         return self.__translateWithGoogleTranslate__.get()
     @property
-    def googleTranslateLanguageCode(self) -> bool:
-        return self.__googleTranslateLanguageCode__.get()
+    def googleTranslateLanguage(self) -> str:
+        return self.__googleTranslateLanguage__.get()
     @property
     def progress(self) -> str:
         return self.__progressText__.get(1.0, END)
@@ -199,14 +201,14 @@ class RenpyFrame(object):
         self.__save_setting(Settings.DECOMPİLE_RPYC, self.__decompileRpycFiles__)
     def __save_translateWithGoogleTranslate(self, *args):
         self.__save_setting(Settings.TRANSLATE_WITH_GOOGLE_TRANSLATE, self.__translateWithGoogleTranslate__)
-        self.__update_googleTranslateLanguageCodeState()
-    def __save_googleTranslateLanguageCode(self, *args):
-        self.__save_setting(Settings.GOOGLE_TRANSLATE_LANGUAGE_CODE, self.__googleTranslateLanguageCode__)
-    def __update_googleTranslateLanguageCodeState(self):
+        self.__update_googleTranslateLanguageState()
+    def __save_googleTranslateLanguage(self, *args):
+        self.__save_setting(Settings.GOOGLE_TRANSLATE_LANGUAGE_CODE, self.__googleTranslateLanguage__)
+    def __update_googleTranslateLanguageState(self):
         if self.translatewithGoogleTranslate:
-            self.__googleTranslateLanguageCodeEntry__["state"] = "normal"
+            self.__googleTranslateLanguageCombobox__["state"] = "readonly"
         else:
-            self.__googleTranslateLanguageCodeEntry__["state"] = "disabled"
+            self.__googleTranslateLanguageCombobox__["state"] = "disabled"
     def __disable_all_controls(self, disabled: bool = True):
         self.__languageNameEntry__["state"] = "disabled" if disabled else "normal"
         self.__languageFolderNameEntry__["state"] = "disabled" if disabled else "normal"
@@ -215,9 +217,9 @@ class RenpyFrame(object):
         self.__decompileRpycFilesCheck__["state"] = "disabled" if disabled else "normal"
         self.__translateWithGoogleTranslateCheck__["state"] = "disabled" if disabled else "normal"
         if disabled:
-            self.__googleTranslateLanguageCodeEntry__["state"] = "disabled"
+            self.__googleTranslateLanguageCombobox__["state"] = "disabled"
         else:
-            self.__update_googleTranslateLanguageCodeState()
+            self.__update_googleTranslateLanguageState()
         print("")
 
     def __save_setting(self, propType, prop):
@@ -250,9 +252,9 @@ class RenpyFrame(object):
         self.__restore_setting(Settings.TRANSLATE_WITH_GOOGLE_TRANSLATE, self.__translateWithGoogleTranslate__)
         self.__translateWithGoogleTranslate__.trace_add("write", self.__save_translateWithGoogleTranslate)
 
-        self.__restore_setting(Settings.GOOGLE_TRANSLATE_LANGUAGE_CODE, self.__googleTranslateLanguageCode__)
-        self.__googleTranslateLanguageCode__.trace_add("write", self.__save_googleTranslateLanguageCode)
-        self.__update_googleTranslateLanguageCodeState()
+        self.__restore_setting(Settings.GOOGLE_TRANSLATE_LANGUAGE_CODE, self.__googleTranslateLanguage__)
+        self.__googleTranslateLanguage__.trace_add("write", self.__save_googleTranslateLanguage)
+        self.__update_googleTranslateLanguageState()
 
     def clearProgress(self):
         self.__progressText__["state"] = "normal"
@@ -421,7 +423,7 @@ class RenpyFrame(object):
         try:
             translated_comment = "# translated"
             if self.translatewithGoogleTranslate:
-                if len(self.googleTranslateLanguageCode) > 0:
+                if len(self.googleTranslateLanguage) > 0:
                     if path.exists(self.tlfilesdir):
                         for _path, _subdirs, _files in walk(self.tlfilesdir):
                             if self.__cancelled__:
@@ -460,8 +462,8 @@ class RenpyFrame(object):
                                                         translatable_texts[file_line_i]["text"] = translate_text
                                                         translatable_texts[file_line_i]["map"] = variable_map
                                             if len(translatable_texts.keys()) > 0:
-                                                self.progress = "Connecting with google translate..."
-                                                translated = translator.translate([value["text"] for key,value in translatable_texts.items()], dest = self.googleTranslateLanguageCode)
+                                                self.progress = "Connecting with google translate. Depending on the length of the dialogues, this may take time..."
+                                                translated = translator.translate([value["text"] for key,value in translatable_texts.items()], dest=googletrans.LANGCODES[self.googleTranslateLanguage.lower()])
                                                 self.progress = "Strings translated sucessfully!"
                                                 for tr_i in range(len(translated)):
                                                     if self.__cancelled__:
