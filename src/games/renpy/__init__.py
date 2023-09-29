@@ -426,6 +426,7 @@ class RenpyFrame(object):
                 if self.cancelled:
                     return True
                 self.__generateTranslationProcess__ = subprocess.Popen(cmd, stdout=subprocess.PIPE, bufsize=1, creationflags=CREATE_NO_WINDOW,env=encoded_environ)
+                generate_error_occurred = False
                 while True:
                     if self.cancelled:
                         return True
@@ -433,13 +434,18 @@ class RenpyFrame(object):
                     if not line:
                         break
                     else:
+                        if len(line.strip()) > 0 and not generate_error_occurred:
+                            generate_error_occurred = True
                         self.progress = fix_console(line)
-                self.progress = "Generated translation files successfully."
-        except Exception as e:
+                if generate_error_occurred:
+                    raise Exception("")
+                else:
+                    self.progress = "Generated translation files successfully."
+                    return True
+        except:
             print(traceback.format_exc())
-            error_text = "Could not create translation files.\n\nError: "+str(e)
-            self.progress = error_text
-            messagebox.showerror("Could not create translation files.", message=error_text)
+            self.progress = "Could not create translation files.\n\nCheck errors above."
+            messagebox.showerror("Could not create translation files.", message="Could not create translation files.\n\nCheck errors in log file.")
             return False
         return True
     def __google_translate(self):
