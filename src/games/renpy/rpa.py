@@ -295,49 +295,62 @@ class RenPyArchive:
 
 class RpaEditor(object):
     def __init__(self, _archive, _files=[], _version:int=None, _key=None, _padding=None, _create=None, _append=None, _delete=None, _list=None, _outfile=None, _extract=None, _verbose = False):
+        self.__cancelled__ = False
+        
+        self.__files__ = _files
         if _version is not None:
-            version = _version
+            self.__version__ = _version
         else:
-            version = 3
+            self.__version__ = 3
 
         # Determine RPAv3 key.
         if _key is not None:
-            key = int(_key, 16)
+            self.__key__ = int(_key, 16)
         else:
-            key = 0xDEADBEEF
+            self.__key__ = 0xDEADBEEF
 
         # Determine padding bytes.
         if _padding is not None:
-            padding = int(_padding)
+            self.__padding__ = int(_padding)
         else:
-            padding = 0
+            self.__padding__ = 0
+
+        self.__create__ = _create
+        self.__append__ = _append
+        self.__delet__ = _delete
+        self.__list__ = _list
+        self.__outfile__ = _outfile
+        self.__extract__ = _extract
+        self.__verbose__ = _verbose
 
         # Determine output file/directory and input archive
-        if _create is not None:
-            archive = None
+        if self.__create__  is not None:
+            self.__archive__ = None
             output = _unicode(_archive)
         else:
-            archive = _unicode(_archive)
-            if _outfile is not None:
-                output = _unicode(_outfile)
+            self.__archive__ = _unicode(_archive)
+            if self.__outfile__ is not None:
+                output = _unicode(self.__outfile__ )
             else:
                 # Default output directory for extraction is the current directory.
-                if _extract is not None:
+                if self.__extract__ is not None:
                     output = os.path.dirname(_archive)
                 else:
                     output = _unicode(_archive)
 
         # Normalize files.
-        if len(_files) > 0 and isinstance(_files[0], list):
-            _files = _files[0]
+        if len(self.__files__) > 0 and isinstance(self.__files__[0], list):
+            self.__files__ = self.__files__[0]
 
         try:
-            archive = RenPyArchive(archive, padlength=padding, key=key, version=version, verbose=_verbose)
+            self.__archive__ = RenPyArchive(archive, padlength=self.__padding__, key=self.__key__, version=self.__version__, verbose=self.__verbose__)
         except IOError as e:
-            print('Could not open archive file {0} for reading: {1}'.format(archive, e), file=sys.stderr)
+            print('Could not open archive file {0} for reading: {1}'.format(self.__archive__, e), file=sys.stderr)
             sys.exit(1)
 
-        if _create is not None or _append is not None:
+        
+    def start(self):
+        if self.__create__  is not None or self.__append__ is not None:
             # We need this seperate function to recursively process directories.
             def add_file(filename):
                 # If the archive path differs from the actual file path, as given in the argument,
@@ -354,40 +367,40 @@ class RpaEditor(object):
                 else:
                     try:
                         with open(filename, 'rb') as file:
-                            archive.add(outfile, file.read())
+                            self.__archive__.add(outfile, file.read())
                     except Exception as e:
                         print('Could not add file {0} to archive: {1}'.format(filename, e), file=sys.stderr)
 
             # Iterate over the given files to add to archive.
-            for filename in _files:
+            for filename in self.__files__:
                 add_file(_unicode(filename))
 
             # Set version for saving, and save.
-            archive.version = version
+            self.__archive__.version = self.__version__
             try:
-                archive.save(output)
+                self.__archive__.save(output)
             except Exception as e:
                 print('Could not save archive file: {0}'.format(e), file=sys.stderr)
-        elif _delete is not None:
+        elif self.__delet__ is not None:
             # Iterate over the given files to delete from the archive.
             for filename in arguments.files:
                 try:
-                    archive.remove(filename)
+                    self.__archive__.remove(filename)
                 except Exception as e:
                     print('Could not delete file {0} from archive: {1}'.format(filename, e), file=sys.stderr)
 
             # Set version for saving, and save.
-            archive.version = version
+            self.__archive__.version = self.__version__
             try:
-                archive.save(output)
+                self.__archive__.save(output)
             except Exception as e:
                 print('Could not save archive file: {0}'.format(e), file=sys.stderr)
-        elif _extract is not None:
+        elif self.__extract__ is not None:
             # Either extract the given files, or all files if no files are given.
-            if len(_files) > 0:
-                files = _files
+            if len(self.__files__) > 0:
+                files = self.__files__
             else:
-                files = archive.list()
+                files = self.__archive__.list()
 
             # Create output directory if not present.
             if not os.path.exists(output):
@@ -395,13 +408,15 @@ class RpaEditor(object):
 
             # Iterate over files to extract.
             for filename in files:
+                if self.__cancelled__:
+                    break
                 if filename.find('=') != -1:
                     (outfile, filename) = filename.split('=', 2)
                 else:
                     outfile = filename
 
                 try:
-                    contents = archive.read(filename)
+                    contents = self.__archive__.read(filename)
 
                     # Create output directory for file if not present.
                     if not os.path.exists(os.path.dirname(os.path.join(output, outfile))):
@@ -411,16 +426,17 @@ class RpaEditor(object):
                         file.write(contents)
                 except Exception as e:
                     print('Could not extract file {0} from archive: {1}'.format(filename, e), file=sys.stderr)
-        elif _list is not None:
+        elif self.__list__ is not None:
             # Print the sorted file list.
-            list = archive.list()
+            list = self.__archive__.list()
             list.sort()
             for file in list:
                 print(file)
         else:
             print('No operation given :(')
             print('Use {0} --help for usage details.'.format(sys.argv[0]))
-
+    def cancel(self):
+        self.__cancelled__ = True
 if __name__ == "__main__":
     import argparse
 

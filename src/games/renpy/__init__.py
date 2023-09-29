@@ -1,4 +1,6 @@
+import os
 from os import path, listdir, remove, rmdir, environ as myenv, mkdir, walk
+import signal
 import re
 import subprocess
 import time
@@ -69,6 +71,12 @@ def fix_console(line):
 class RenpyFrame(object):
 
     def __init__(self, root: Tk, filename:str):
+
+        self.__cancelled__ = False
+        self.__decompileRpycProcess__ = None
+        self.__generateTranslationProcess__ = None
+
+        self.__rpaeditor__ = None
         self.__root__ = root
         self.__frame__ = None
         self.__filename__ = filename
@@ -296,14 +304,21 @@ class RenpyFrame(object):
         return ''.join(random.choice(letters) for i in range(length))+".rpy"
     
     def __extract_rpa_archives(self):
+        if self.__cancelled__:
+            return
         if self.extractRpaArchives:
             for fname in listdir(self.gamedir):
+                if self.__cancelled__:
+                    return
                 fullpath = path.join(self.gamedir, fname)
                 if fname.endswith(".rpa"):
                     try:
                         self.progress = "Extracting "+fname+"..."
                         print("Exracting "+fname+"...")
-                        RpaEditor(fullpath, _extract=True, _version=2)
+                        self.__rpaeditor__ = RpaEditor(fullpath, _extract=True, _version=2)
+                        self.__rpaeditor__.start()
+                        if self.__cancelled__:
+                            return
                         self.progress = "Extracted "+fname+" successfully!"
                     except Exception as e:
                         print(traceback.format_exc())
@@ -316,6 +331,8 @@ class RenpyFrame(object):
         return True
 
     def __decompile_rpyc_files(self):
+        if self.__cancelled__:
+            return
         if self.decompileRpycFiles:
             try:
                 self.progress = "Starting decompiling rpyc files..."
@@ -323,14 +340,16 @@ class RenpyFrame(object):
                 unren_bat_file = open(self.unrenfile, "x")
                 unren_bat_file.write(unren_content)
                 unren_bat_file.close()
-                spRpyc = subprocess.Popen(self.unrenfile+ " decompile", cwd=self.dirname, stdout=subprocess.PIPE, bufsize=1, creationflags=CREATE_NO_WINDOW)
+                self.__decompileRpycProcess__ = subprocess.Popen(self.unrenfile+ " decompile", cwd=self.dirname, stdout=subprocess.PIPE, bufsize=1, creationflags=CREATE_NO_WINDOW)
                 while True:
-                    line = spRpyc.stdout.readline()
+                    if self.__cancelled__:
+                        return
+                    line = self.__decompileRpycProcess__.stdout.readline()
                     if not line:
                         break
                     else:
                         self.progress = fix_console(line)
-                self.progress = "Decompiling rpyc files completed. Removing temp files."
+                    self.progress = "Decompiling rpyc files completed. Removing temp files."
                 self.clear_temp_rpyc_decompilers()
                 time.sleep(3)
                 self.progress = "Temp files removed successfully!"
@@ -345,6 +364,8 @@ class RenpyFrame(object):
         return True
     
     def __generate_translation_files(self):
+        if self.__cancelled__:
+            return
         try:
             self.progress = "Genarating translation files..."
             executable_path = path.dirname(fsdecode(self.filename))
@@ -375,10 +396,13 @@ class RenpyFrame(object):
 
             # Launch the project.
             cmd = [ str(i) for i in cmd ]
-
-            p = subprocess.Popen(cmd, stdout=subprocess.PIPE, bufsize=1, creationflags=CREATE_NO_WINDOW,env=encoded_environ)
+            if self.__cancelled__:
+                return
+            self.__generateTranslationProcess__ = subprocess.Popen(cmd, stdout=subprocess.PIPE, bufsize=1, creationflags=CREATE_NO_WINDOW,env=encoded_environ)
             while True:
-                line = p.stdout.readline()
+                if self.__cancelled__:
+                    return
+                line = self.__generateTranslationProcess__.stdout.readline()
                 if not line:
                     break
                 else:
@@ -392,13 +416,19 @@ class RenpyFrame(object):
             return False
         return True
     def __google_translate(self):
+        if self.__cancelled__:
+            return
         try:
             translated_comment = "# translated"
             if self.translatewithGoogleTranslate:
                 if len(self.googleTranslateLanguageCode) > 0:
                     if path.exists(self.tlfilesdir):
                         for _path, _subdirs, _files in walk(self.tlfilesdir):
+                            if self.__cancelled__:
+                                return
                             for _name in _files:
+                                if self.__cancelled__:
+                                    return
                                 reallocation = path.join(_path, _name)
                                 if path.isfile(reallocation) and reallocation.endswith(".rpy"):
                                     self.progress = "Translating \""+reallocation+"\"..."
@@ -409,6 +439,9 @@ class RenpyFrame(object):
                                         else:
                                             translatable_texts = {}
                                             for file_line_i in range(len(file_lines)):
+                                                if self.__cancelled__:
+                                                    tlfile.closed
+                                                    return
                                                 file_line_text = str(file_lines[file_line_i])
                                                 file_line_stripped = file_line_text.strip()
                                                 if not file_line_stripped.startswith("#") and not file_line_stripped.startswith("translate ") and not file_line_stripped.startswith("old") and not len(file_line_stripped) == 0:
@@ -431,6 +464,9 @@ class RenpyFrame(object):
                                                 translated = translator.translate([value["text"] for key,value in translatable_texts.items()], dest = self.googleTranslateLanguageCode)
                                                 self.progress = "Strings translated sucessfully!"
                                                 for tr_i in range(len(translated)):
+                                                    if self.__cancelled__:
+                                                        tlfile.closed
+                                                        return
                                                     original_index = list(translatable_texts)[tr_i]
                                                     original_value = list(translatable_texts.values())[tr_i]
                                                     translated_text = translated[tr_i].text
@@ -460,12 +496,16 @@ class RenpyFrame(object):
             return False
         return True
     def __generate_translation_lock_file(self):
+        if self.__cancelled__:
+            return
         if self.lockLocalization:
             try:
                 self.progress = "Language locking to "+self.languageName+" ("+self.languageFolderName+")..."
                 self.progress = "Looking for existed lock file."
                 lockfilefound = None
                 for foundlockfile in listdir(self.gamedir):
+                    if self.__cancelled__:
+                        return
                     lockfilerealLocation = path.join(self.gamedir, foundlockfile)
                     if path.isfile(lockfilerealLocation) and lockfilerealLocation.endswith(".rpy"):
                         with open(lockfilerealLocation, "r") as extlocktlfile:
@@ -483,6 +523,8 @@ class RenpyFrame(object):
                     self.progress = "Creating new one..."
                 else:
                     self.progress = "Lock file not found, creating one..."
+                if self.__cancelled__:
+                    return
                 locktlfile = path.join(self.gamedir, self.generate_random_rpy_name(6))
                 lock_tl_file = open(locktlfile, "x")
                 lock_tl_file.write(self.commentline+"\ninit python:\n    config.language = \""+self.languageFolderName+"\"")
@@ -510,6 +552,7 @@ class RenpyFrame(object):
     def generate_translation(self):
         if len(self.languageFolderName) >= 3 and re.match('^[abcdefghijklmnoprqstuwvyzx]+$',self.languageFolderName):
             if len(self.languageName) > 0:
+                self.__cancelled__ = False
                 self.clearProgress()
                 self.__disable_all_controls(True)
                 #self.start_loading()
@@ -519,6 +562,9 @@ class RenpyFrame(object):
                             if self.__google_translate():
                                 if self.__generate_translation_lock_file():
                                     pass
+                
+                if self.__cancelled__:
+                    self.progress = "Translation cancelled by user!"
                 #self.stop_loading()
                 self.__disable_all_controls(False)
                 self.save_progress()
@@ -534,3 +580,17 @@ class RenpyFrame(object):
             self.__frame__.destroy()
         self.__frame__ = None
         self = None
+        self.cancel()
+    def cancel(self):
+        self.progress = "Cancelling translation..."
+        self.progress = "It can take long according to background processes..."
+        self.__cancelled__ = True
+        if self.__rpaeditor__ is not None:
+            self.__rpaeditor__.cancel()
+        if self.__decompileRpycProcess__ is not None:
+            try:
+                #os.killpg(os.getpgid(self.__decompileRpycProcess__.pid), signal.SIGTERM)
+                os.kill(self.__decompileRpycProcess__.pid, signal.CTRL_C_EVENT)
+                self.__decompileRpycProcess__ = None
+            except Exception as e:
+                print(traceback.format_exc())

@@ -62,22 +62,31 @@ def browse_game():
         toggle_button_state(startButton, "disabled")
     showFrame()
 
+started = False
 # start translation
 def translate():
-    global filename, gameType
-    if gameType == GameType.RENPY and renpyFrame is not None:
-        try:
-            toggle_button_state(startButton, "disabled")
-            renpyFrame.generate_translation()
-            toggle_button_state(startButton, "normal")
-        except Exception as e:
-            messagebox.showerror(title="Error", message=str(e))
-            toggle_button_state(startButton, "normal")
-    elif gameType == GameType.NONE:
-        messagebox.showwarning(title="Not a supported game", message="This is not a supported game!\n\n"+filename)
-
+    global filename, gameType, started
+    if started:
+        if gameType == GameType.RENPY and renpyFrame is not None:
+            started = False
+            renpyFrame.cancel()
+    else:
+        if gameType == GameType.RENPY and renpyFrame is not None:
+            try:
+                startButton["text"] = "Cancel"
+                started = True
+                toggle_button_state(browseButton, "disabled")
+                renpyFrame.generate_translation()
+                startButton["text"] = "Start"
+                toggle_button_state(browseButton, "normal")
+            except Exception as e:
+                messagebox.showerror(title="Error", message=str(e))
+                startButton["text"] = "Start"
+                toggle_button_state(browseButton, "normal")
+            started = False
+        elif gameType == GameType.NONE:
+            messagebox.showwarning(title="Not a supported game", message="This is not a supported game!\n\n"+filename)
 def start_translation():
-    global start_translation_thread
     start_translation_thread = threading.Thread(target=translate)
     start_translation_thread.daemon = True
     start_translation_thread.start()
