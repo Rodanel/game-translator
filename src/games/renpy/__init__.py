@@ -701,9 +701,9 @@ class RenpyFrame(object):
         if self.__frame__ is not None:
             self.__frame__.pack_forget()
             self.__frame__.destroy()
+        self.cancel()
         self.__frame__ = None
         self = None
-        self.cancel()
     def cancel(self):
         self.progress = "Cancelling translation. It can take long according to background processes..."
         self.progress = ""
