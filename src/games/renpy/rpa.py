@@ -326,24 +326,24 @@ class RpaEditor(object):
         # Determine output file/directory and input archive
         if self.__create__  is not None:
             self.__archive__ = None
-            output = _unicode(_archive)
+            self.__output__ = _unicode(_archive)
         else:
             self.__archive__ = _unicode(_archive)
             if self.__outfile__ is not None:
-                output = _unicode(self.__outfile__ )
+                self.__output__ = _unicode(self.__outfile__ )
             else:
                 # Default output directory for extraction is the current directory.
                 if self.__extract__ is not None:
-                    output = os.path.dirname(_archive)
+                    self.__output__ = os.path.dirname(_archive)
                 else:
-                    output = _unicode(_archive)
+                    self.__output__ = _unicode(_archive)
 
         # Normalize files.
         if len(self.__files__) > 0 and isinstance(self.__files__[0], list):
             self.__files__ = self.__files__[0]
 
         try:
-            self.__archive__ = RenPyArchive(archive, padlength=self.__padding__, key=self.__key__, version=self.__version__, verbose=self.__verbose__)
+            self.__archive__ = RenPyArchive(self.__archive__, padlength=self.__padding__, key=self.__key__, version=self.__version__, verbose=self.__verbose__)
         except IOError as e:
             print('Could not open archive file {0} for reading: {1}'.format(self.__archive__, e), file=sys.stderr)
             sys.exit(1)
@@ -356,18 +356,18 @@ class RpaEditor(object):
                 # If the archive path differs from the actual file path, as given in the argument,
                 # extract the archive path and actual file path.
                 if filename.find('=') != -1:
-                    (outfile, filename) = filename.split('=', 2)
+                    (self.__outfile__ , filename) = filename.split('=', 2)
                 else:
-                    outfile = filename
+                    self.__outfile__ = filename
 
                 if os.path.isdir(filename):
                     for file in os.listdir(filename):
                         # We need to do this in order to maintain a possible ARCHIVE=REAL mapping between directories.
-                        add_file(outfile + os.sep + file + '=' + filename + os.sep + file)
+                        add_file(self.__outfile__  + os.sep + file + '=' + filename + os.sep + file)
                 else:
                     try:
                         with open(filename, 'rb') as file:
-                            self.__archive__.add(outfile, file.read())
+                            self.__archive__.add(self.__outfile__ , file.read())
                     except Exception as e:
                         print('Could not add file {0} to archive: {1}'.format(filename, e), file=sys.stderr)
 
@@ -378,7 +378,7 @@ class RpaEditor(object):
             # Set version for saving, and save.
             self.__archive__.version = self.__version__
             try:
-                self.__archive__.save(output)
+                self.__archive__.save(self.__output__)
             except Exception as e:
                 print('Could not save archive file: {0}'.format(e), file=sys.stderr)
         elif self.__delet__ is not None:
@@ -392,7 +392,7 @@ class RpaEditor(object):
             # Set version for saving, and save.
             self.__archive__.version = self.__version__
             try:
-                self.__archive__.save(output)
+                self.__archive__.save(self.__output__)
             except Exception as e:
                 print('Could not save archive file: {0}'.format(e), file=sys.stderr)
         elif self.__extract__ is not None:
@@ -403,26 +403,26 @@ class RpaEditor(object):
                 files = self.__archive__.list()
 
             # Create output directory if not present.
-            if not os.path.exists(output):
-                os.makedirs(output)
+            if not os.path.exists(self.__output__):
+                os.makedirs(self.__output__)
 
             # Iterate over files to extract.
             for filename in files:
                 if self.__cancelled__:
                     break
                 if filename.find('=') != -1:
-                    (outfile, filename) = filename.split('=', 2)
+                    (self.__outfile__ , filename) = filename.split('=', 2)
                 else:
-                    outfile = filename
+                    self.__outfile__  = filename
 
                 try:
                     contents = self.__archive__.read(filename)
 
                     # Create output directory for file if not present.
-                    if not os.path.exists(os.path.dirname(os.path.join(output, outfile))):
-                        os.makedirs(os.path.dirname(os.path.join(output, outfile)))
+                    if not os.path.exists(os.path.dirname(os.path.join(self.__output__, self.__outfile__ ))):
+                        os.makedirs(os.path.dirname(os.path.join(self.__output__, self.__outfile__ )))
 
-                    with open(os.path.join(output, outfile), 'wb') as file:
+                    with open(os.path.join(self.__output__, self.__outfile__ ), 'wb') as file:
                         file.write(contents)
                 except Exception as e:
                     print('Could not extract file {0} from archive: {1}'.format(filename, e), file=sys.stderr)
