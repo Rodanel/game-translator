@@ -173,7 +173,7 @@ class RenpyFrame(object):
         return self.__decompileRpycFiles__.get()
     @property
     def forceRegenerateTranslation(self) -> bool:
-        return self.__forceRegenerateTranslation__
+        return self.__forceRegenerateTranslation__.get()
     @property
     def lockLocalization(self) -> bool:
         return self.__lockLocalization__.get()
@@ -391,7 +391,7 @@ class RenpyFrame(object):
             if path.exists(self.tlfilesdir) and not self.forceRegenerateTranslation:
                 self.progress = "Generation of translation files skipped, because translation folder already exists and force regenerate is disabled."
             else:
-                if self.forceRegenerateTranslation:
+                if path.exists(self.tlfilesdir) and self.forceRegenerateTranslation:
                     self.progress = "Regenerating translation files..."
                 else:
                     self.progress = "Generating translation files..."
