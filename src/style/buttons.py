@@ -9,3 +9,6 @@ def toggle_button_state(button: Button, state:str):
 
 enabledButtonColor = "#008000"
 disabledButtonColor = "#386b38"
+
+enabledRedButtonColor = "#FF0000"
+disabledRedButtonColor = "#E12626"
