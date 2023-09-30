@@ -436,7 +436,6 @@ class RenpyFrame(object):
         if self.decompileRpycFiles:
             try:
                 self.progress = "Starting decompiling rpyc files..."
-                self.clear_temp_rpyc_decompilers()
                 unren_bat_file = open(self.unrenfile, "x")
                 unren_bat_file.write(unren_content)
                 unren_bat_file.close()
@@ -449,7 +448,7 @@ class RenpyFrame(object):
                         break
                     else:
                         self.progress = fix_console(line)
-                    self.progress = "Decompiling rpyc files completed. Removing temp files."
+                self.progress = "Decompiling rpyc files completed. Removing temp files."
                 self.clear_temp_rpyc_decompilers()
                 time.sleep(3)
                 self.progress = "Temp files removed successfully!"
@@ -655,6 +654,7 @@ class RenpyFrame(object):
             self.progress = "\nAdd this code to \"screen preferences():\" in screens.rpy. Replace English with game's orijinal language."
         return True
     def generate_translation(self):
+        self.clear_temp_rpyc_decompilers()
         if len(self.languageFolderName) >= 3 and re.match('^[abcdefghijklmnoprqstuwvyzx]+$',self.languageFolderName):
             if len(self.languageName) > 0:
                 if (self.translatewithGoogleTranslate and len(self.googleTranslateLanguage) > 0) or not self.translatewithGoogleTranslate:
