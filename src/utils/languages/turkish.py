@@ -163,12 +163,15 @@ class Turkish(LanguageBase):
 
     @classmethod
     @property
-    def exrtractFileErrorTitle(cls):
+    def extractFileErrorTitle(cls):
         return "Arşiv çıkartılamadı"
 
     @classmethod
-    def exrtractFileError(cls, filePath:str, error:str):
-        return "\""+filePath+"\" arşivi çıkartılamadı.\n\nHata: "+error
+    def extractFileError(cls, filePath: str, error: str=None):
+        if error is None:
+            return "\""+filePath+"\" arşivi çıkartılamadı.\n\nDetaylar için logları kontrol edin."
+        else:
+            return "\""+filePath+"\" arşivi çıkartılamadı.\n\n"+error
 
     @classmethod
     def ignoredFileWarning(cls, fileName: str):
@@ -200,9 +203,12 @@ class Turkish(LanguageBase):
         return "Çıkartılamıyor"
 
     @classmethod
-    def decompileRpycError(cls, error:str):
-        return "Rpyc dosyaları çıkartılamıyor.\n\nHata: "+error
-    
+    def decompileRpycError(cls):
+        return "Rpyc dosyaları çıkartılamıyor.\n\nSee logs for details."
+
+    @classmethod
+    def decompileRpycError(cls, error=str):
+        return "Rpyc dosyaları çıkartılamıyor.\n\n"+error
 
     @classmethod
     @property
@@ -281,8 +287,11 @@ class Turkish(LanguageBase):
         return "Çeviri Başarısız"
     
     @classmethod
-    def translationFailed(cls, error:str):
-        return "Çeviri başarısız!\n\nHata: "+error
+    def translationFailed(cls, error: str=None):
+        if error is None:
+            return "Çeviri başarısız!\n\nDetaylar için logları kontrol edin."
+        else:
+            return "Çeviri başarısız!\n\n"+error 
     
     @classmethod
     def lockingTranslation(cls, languageName: str, languageFolderName: str):
@@ -303,7 +312,7 @@ class Turkish(LanguageBase):
         return "Kilit dosyası bulunmadı, bir tane oluşturuluyor..."
     
     @classmethod
-    def lockFileCreated(cls, languageName: str, languageFolderName: str, lockFileName:str):
+    def lockFileCreated(cls, languageName: str, languageFolderName: str, lockFileName: str):
         return "Dil, şu dile kilitlendi: "+languageName+" ("+languageFolderName+"). Kilidi açmak için sadece \""+lockFileName+"\" dosyasını silmeniz yeterli."
     
     @classmethod
@@ -312,8 +321,11 @@ class Turkish(LanguageBase):
         return "Kilit Dosyası Oluşturulamadı"
     
     @classmethod
-    def lockFileFailed(cls, error: str):
-        return "Dil kilit dosyası oluşturulamadı.\n\nHata: "+error
+    def lockFileFailed(cls, error: str=None):
+        if error is None:
+            return "Dil kilit dosyası oluşturulamadı.\n\nDetaylar için logları kontrol edin."
+        else:
+            return "Dil kilit dosyası oluşturulamadı.\n\n"+error
 
     @classmethod
     @property
@@ -370,9 +382,13 @@ class Turkish(LanguageBase):
 
     @classmethod
     @property
-    def creatingArhiveErrorTitle(cls):
+    def creatingArchiveErrorTitle(cls):
         return "Arşiv Oluşturulamadı"
 
     @classmethod
-    def creatingArhiveError(cls, error: str):
-        return "Arşiv dosyası oluşturulamadı!\n\nHata: "+error
+    def creatingArchiveError(cls, error: str=None):
+        if error is None:
+            return "Arşiv dosyası oluşturulamadı!\n\nDetaylar için logları kontrol edin."
+        else:
+           return "Arşiv dosyası oluşturulamadı!\n\n"+error
+        

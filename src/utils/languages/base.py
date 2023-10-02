@@ -161,12 +161,15 @@ class LanguageBase(object):
 
     @classmethod
     @property
-    def exrtractFileErrorTitle(cls):
+    def extractFileErrorTitle(cls):
         return "Could not extract archive"
 
     @classmethod
-    def exrtractFileError(cls, filePath:str, error:str):
-        return "Could not extract \""+filePath+"\" archive.\n\nError: "+error
+    def extractFileError(cls, filePath:str, error: str=None):
+        if error is None:
+            return "Could not extract \""+filePath+"\" archive.\n\nSee logs for details."
+        else:
+            return "Could not extract \""+filePath+"\" archive.\n\n"+error
 
     @classmethod
     def ignoredFileWarning(cls, fileName: str):
@@ -198,10 +201,12 @@ class LanguageBase(object):
         return "Could not decompile"
 
     @classmethod
-    def decompileRpycError(cls, error:str):
-        return "Could not decompile rpyc files.\n\nError: "+error
+    def decompileRpycError(cls, error: str=None):
+        if error is None:
+            return "Could not decompile rpyc files.\n\nSee logs for details."
+        else:
+            return "Could not decompile rpyc files.\n\n"+error
     
-
     @classmethod
     @property
     def decompilingRpycSkipped(cls):
@@ -279,9 +284,12 @@ class LanguageBase(object):
         return "Translation Failed"
     
     @classmethod
-    def translationFailed(cls, error:str):
-        return "Translation failed!\n\nError: "+error
-    
+    def translationFailed(cls, error: str=None):
+        if error is None:
+            return "Translation failed!\n\nSee logs for details."
+        else:
+            return "Translation failed!\n\n"+error
+
     @classmethod
     def lockingTranslation(cls, languageName: str, languageFolderName: str):
         return "Language locking to "+languageName+" ("+languageFolderName+")..."
@@ -310,8 +318,11 @@ class LanguageBase(object):
         return "Could not create lock file"
     
     @classmethod
-    def lockFileFailed(cls, error: str):
-        return "Could not create translation lock file.\n\nError: "+error
+    def lockFileFailed(cls, error: str=None):
+        if error is None:
+            return "Could not create translation lock file.\n\nSee logs for details."
+        else:
+            return "Could not create translation lock file.\n\n"+error
 
     @classmethod
     @property
@@ -368,9 +379,9 @@ class LanguageBase(object):
 
     @classmethod
     @property
-    def creatingArhiveErrorTitle(cls):
+    def creatingArchiveErrorTitle(cls):
         return "Could not Create an Archive"
 
     @classmethod
-    def creatingArhiveError(cls, error: str):
+    def creatingArchiveError(cls, error: str):
         return "Archive could not be created!\n\nError: "+error

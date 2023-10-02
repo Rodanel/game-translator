@@ -345,7 +345,7 @@ class RenpyFrame(object):
             prop.set(gameSettings[propType] if propType in gameSettings else defaultSettings[propType])
         except Exception as e:
             print("Could not restore setting: "+propType)
-            print("Error: "+str(e))
+            print(traceback.format_exc())
 
     def __update_props(self):
         self.__restore_setting(Settings.LANGUAGE_NAME, self.__languageName__)
@@ -448,12 +448,12 @@ class RenpyFrame(object):
                                 return True
                             self.progressOrj = "Extracted "+fname+" successfully!"
                             self.progress = settings.language.exrtractedFileSuccess(fileName=fname)
-                        except Exception as e:
-                            print(traceback.format_exc())
-                            self.progressOrj = "Could not extract \""+fname+"\" archive.\n\nError: "+str(e)
-                            error_text =  settings.language.exrtractFileError(filePath=fname, error=str(e))
-                            self.progress = error_text
-                            messagebox.showerror(settings.language.exrtractFileErrorTitle, message=error_text)               
+                        except:
+                            error_text = traceback.format_exc()
+                            print(error_text)
+                            self.progressOrj = "Could not extract \""+fname+"\" archive.\n\n"+error_text
+                            self.progress = settings.language.extractFileError(filePath=fname, error=error_text)
+                            messagebox.showerror(settings.language.extractFileErrorTitle, message=settings.language.extractFileError(filePath=fname))               
                             return False
                     else:
                         self.progressOrj = "Ignored "+fname+"..."
@@ -489,12 +489,12 @@ class RenpyFrame(object):
                 time.sleep(3)
                 self.progressOrj = "Temp files removed successfully!"
                 self.progress = settings.language.removedTmpFiles
-            except Exception as e:
-                print(traceback.format_exc())
-                self.progressOrj = "Could not decompile rpyc files.\n\nError: "+str(e)
-                error_text = settings.language.decompileRpycError(error=str(e))
-                self.progress = error_text
-                messagebox.showerror(settings.language.decompileRpycErrorTitle, message=error_text)
+            except:
+                error_text = traceback.format_exc()
+                print(error_text)
+                self.progressOrj = "Could not decompile rpyc files.\n\n"+error_text
+                self.progress = settings.language.decompileRpycError(error=error_text)
+                messagebox.showerror(settings.language.decompileRpycErrorTitle, message=settings.language.decompileRpycError())
                 return False
         else:
             self.progressOrj = "Decompiling rpyc files skipped."
@@ -645,12 +645,12 @@ class RenpyFrame(object):
                     self.progressOrj =  "Translation folder \""+self.tlfilesdir+"\" not found!"
                     self.progress = settings.language.translationFolderNotFound(folderPath=self.tlfilesdir)
                     return False
-        except Exception as e:
-            print(traceback.format_exc())
-            self.progressOrj = "Translation failed!\n\nError: "+str(e)
-            error_text = settings.language.translationFailed(error=str(e))
-            self.progress = error_text
-            messagebox.showerror(settings.language.translationFailedTitle, message=error_text) 
+        except:
+            error_text = traceback.format_exc()
+            print(error_text)
+            self.progressOrj = "Translation failed!\n\n"+error_text
+            self.progress = settings.language.translationFailed(error=error_text)
+            messagebox.showerror(settings.language.translationFailedTitle, message=settings.language.translationFailed()) 
             return False
         return True
     def __generate_translation_lock_file(self):
@@ -692,12 +692,12 @@ class RenpyFrame(object):
                 lock_tl_file.close()
                 self.progressOrj = "Language locked to "+self.languageName+" ("+self.languageFolderName+"). For unlocking just delete \""+locktlfile+"\" file."
                 self.progress = settings.language.lockFileCreated(languageName=self.languageName, languageFolderName=self.languageFolderName, lockFileName=locktlfile)
-            except Exception as e:
-                print(traceback.format_exc())
-                self.progressOrj = "Could not create translation lock file.\n\nError: "+str(e)
-                error_text = settings.language.lockFileFailed(error=str(e))
-                self.progress = error_text
-                messagebox.showerror(settings.language.lockFileFailedTitle, message=error_text) 
+            except:
+                error_text = traceback.format_exc()
+                print(error_text)
+                self.progressOrj = "Could not create translation lock file.\n\n"+error_text
+                self.progress = settings.language.lockFileFailed(error=error_text)
+                messagebox.showerror(settings.language.lockFileFailedTitle, message=settings.language.lockFileFailed()) 
                 return False
         return True
     def generate_translation(self):
@@ -777,7 +777,7 @@ class RenpyFrame(object):
                 #os.killpg(os.getpgid(self.__decompileRpycProcess__.pid), signal.SIGTERM)
                 os.kill(self.__decompileRpycProcess__.pid, signal.CTRL_C_EVENT)
                 self.__decompileRpycProcess__ = None
-            except Exception as e:
+            except:
                 print(traceback.format_exc())
     def get_zip_name(self, _dirname, _exname,n:int=0):
         _exnamenew = _exname + "-tl"
@@ -810,10 +810,10 @@ class RenpyFrame(object):
             self.progressOrj = ""
             self.progressOrj = "Creating archive completed!"
             self.progress = settings.language.createdArhiveSuccess
-        except Exception as e:
-            print(traceback.format_exc())
-            self.progressOrj = "Archive could not be created!\n\nError: "+str(e)
-            error_text = settings.language.creatingArhiveError(error=str(e))
-            self.progress = error_text
-            messagebox.showerror(settings.language.creatingArhiveErrorTitle, message=error_text)
+        except:
+            error_text = traceback.format_exc()
+            print(error_text)
+            self.progressOrj = "Archive could not be created!\n\n"+error_text
+            self.progress = settings.language.creatingArchiveError(error=error_text)
+            messagebox.showerror(settings.language.creatingArchiveErrorTitle, message=settings.language.creatingArchiveError())
         self.save_progress()
