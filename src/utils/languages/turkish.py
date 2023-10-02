@@ -60,7 +60,7 @@ class Turkish(LanguageBase):
     @classmethod
     @property
     def detectedRenpyDesc(cls):
-        return "Renpy oyunu tespit edildi! Bu yanlış ise lütfen bana bildirin."
+        return "Bu araç bazı oyunların renpy versiyonlarına uygun olmayabilir.\nEğer bir hata ile karşılaşırsanız lütfen bana bildirin."
     
     @classmethod
     @property

@@ -58,7 +58,7 @@ class LanguageBase(object):
     @classmethod
     @property
     def detectedRenpyDesc(cls):
-        return "Detected a renpy game! If this is wrong please report to me"
+        return "This tool may not be suitable for renpy versions of some games.\nIf you encounter an error, please let me know."
     
     @classmethod
     @property

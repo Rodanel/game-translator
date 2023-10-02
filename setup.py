@@ -6,7 +6,7 @@ app_name = "Game Translator"
 
 setup(
     name= app_name,
-    version='0.48',
+    version='0.49',
     author="Rodanel",
     windows=[
     {
