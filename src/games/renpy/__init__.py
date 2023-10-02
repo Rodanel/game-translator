@@ -525,14 +525,16 @@ class RenpyFrame(object):
                         break
                 else:
                     raise Exception("Python interpreter not found: %r", executables)
-                cmd = [ executable, "-EO", sys.argv[0] ]
+                #cmd = [ executable, "-EO", sys.argv[0] ]
+                cmd = [ executable]
                 args = [ "translate", self.languageFolderName ]
                 cmd.append(self.dirname)
                 cmd.extend(args)
 
                 environ = dict(myenv)
                 environ.update({})
-
+                if hasattr(sys, "renpy_executable"):
+                    environ = { k : v for k, v in environ.items() if not k.startswith("PYTHON") }
                 encoded_environ = { }
 
                 for k, v in environ.items():
