@@ -699,18 +699,6 @@ class RenpyFrame(object):
                 self.progress = error_text
                 messagebox.showerror(settings.language.lockFileFailedTitle, message=error_text) 
                 return False
-        else:
-            self.progressOrj = self.progress = "\nvbox:"
-            self.progressOrj = self.progress = "    style_prefix \"radio\""
-            self.progressOrj = self.progress = "    label _(\"Language\")"
-            self.progressOrj = self.progress = "    textbutton \"English\" action Language(None)"
-            for langdir in listdir(self.tldir):
-                if langdir != "None":
-                    languageNameTemp = langdir
-                    if self.languageFolderName == langdir:
-                        languageNameTemp = self.languageName
-                    self.progressOrj = self.progress = "    textbutton \""+languageNameTemp+"\" action Language(\""+langdir+"\")"
-            self.progressOrj = self.progress = settings.language.languageSettingsDesc
         return True
     def generate_translation(self):
         self.clear_temp_rpyc_decompilers()
@@ -744,9 +732,25 @@ class RenpyFrame(object):
                     #self.stop_loading()
                     self.clear_temp_rpyc_decompilers()
                     self.__disable_all_controls(False)
-                    self.save_progress()
-                    if not self.cancelled and not error_occurred:
-                        messagebox.showinfo(settings.language.translationCompletedTitle, settings.language.translationCompleted)
+                    all_skipped = False
+                    if not self.extractRpaArchives and not self.decompileRpycFiles and (path.exists(self.tlfilesdir) and not self.forceRegenerateTranslation) and not self.translatewithGoogleTranslate and not self.lockLocalization:
+                        all_skipped = True
+                    if not all_skipped:
+                        if not self.lockLocalization:
+                            self.progressOrj = self.progress = "\nvbox:"
+                            self.progressOrj = self.progress = "    style_prefix \"radio\""
+                            self.progressOrj = self.progress = "    label _(\"Language\")"
+                            self.progressOrj = self.progress = "    textbutton \"English\" action Language(None)"
+                            for langdir in listdir(self.tldir):
+                                if langdir != "None":
+                                    languageNameTemp = langdir
+                                    if self.languageFolderName == langdir:
+                                        languageNameTemp = self.languageName
+                                    self.progressOrj = self.progress = "    textbutton \""+languageNameTemp+"\" action Language(\""+langdir+"\")"
+                            self.progressOrj = self.progress = settings.language.languageSettingsDesc
+                        self.save_progress()
+                        if not self.cancelled and not error_occurred:
+                            messagebox.showinfo(settings.language.translationCompletedTitle, settings.language.translationCompleted)
                 else:
                     self.progress = settings.language.googleTransCanNotBeEmpty
             else:
