@@ -482,6 +482,7 @@ class RenpyFrame(object):
                         break
                     else:
                         self.progressOrj = fix_console(line)
+                        self.progress = fix_console(line)
                 self.progressOrj = "Decompiling rpyc files completed. Removing temp files."
                 self.progress = settings.language.decompilingRpycCompleted
                 self.clear_temp_rpyc_decompilers()
@@ -556,6 +557,7 @@ class RenpyFrame(object):
                         if len(line.strip()) > 0 and not generate_error_occurred:
                             generate_error_occurred = True
                         self.progressOrj = fix_console(line)
+                        self.progress = fix_console(line)
                 if generate_error_occurred:
                     raise Exception("")
                 else:
