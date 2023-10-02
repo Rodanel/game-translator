@@ -66,7 +66,7 @@ class LanguageBase(object):
         return "Unsupported Game"
     
     @classmethod
-    def notSupportedGameDesc(cls, filePath: str):
+    def unsupportedGame(cls, filePath: str):
         return "This is not a supported game!\n\n"+filePath
     
     @classmethod
@@ -152,7 +152,6 @@ class LanguageBase(object):
         return "You can find this log file in "+filePath+" later."
 
     @classmethod
-    @property
     def exrtractingFile(cls, fileName: str):
         return "Extracting \""+fileName+"\"..."
 

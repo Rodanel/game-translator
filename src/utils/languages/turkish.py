@@ -154,7 +154,6 @@ class Turkish(LanguageBase):
         return "Bu log dosyasını daha sonra \""+filePath+"\" konumunda bulabilirsiniz."
 
     @classmethod
-    @property
     def exrtractingFile(cls, fileName: str):
         return "\""+fileName+"\" arşivi çıkartılıyor..."
 
