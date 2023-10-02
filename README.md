@@ -59,5 +59,5 @@ pip install -r requirements.txt
 - Build
 
 ```
-pyinstaller --noconsole --name "Game Translator" game_translator.py
+python setup.py py2exe
 ```

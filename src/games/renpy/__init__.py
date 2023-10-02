@@ -473,7 +473,7 @@ class RenpyFrame(object):
                 unren_bat_file = open(self.unrenfile, "x")
                 unren_bat_file.write(unren_content)
                 unren_bat_file.close()
-                self.__decompileRpycProcess__ = subprocess.Popen(self.unrenfile+ " decompile", cwd=self.dirname, stdout=subprocess.PIPE, bufsize=1, creationflags=CREATE_NO_WINDOW)
+                self.__decompileRpycProcess__ = subprocess.Popen(self.unrenfile+ " decompile", cwd=self.dirname, stdout=subprocess.PIPE, creationflags=CREATE_NO_WINDOW)
                 while True:
                     if self.cancelled:
                         return True
@@ -545,7 +545,7 @@ class RenpyFrame(object):
                 cmd = [ str(i) for i in cmd ]
                 if self.cancelled:
                     return True
-                self.__generateTranslationProcess__ = subprocess.Popen(cmd, stdout=subprocess.PIPE, bufsize=1, creationflags=CREATE_NO_WINDOW,env=encoded_environ)
+                self.__generateTranslationProcess__ = subprocess.Popen(cmd, stdout=subprocess.PIPE, creationflags=CREATE_NO_WINDOW,env=encoded_environ)
                 generate_error_occurred = False
                 while True:
                     if self.cancelled:

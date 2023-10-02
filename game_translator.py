@@ -14,7 +14,9 @@ root = Tk()
 
 # set title
 root.title("Game Translator by Rodanel")
-
+#window_icon = PhotoImage(file = 'assets/icon.jpg')
+#root.iconphoto(False, window_icon)
+root.iconbitmap(default='assets/favicon.ico')
 # set size
 window_width = 500
 window_height = 500
