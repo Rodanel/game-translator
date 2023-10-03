@@ -100,9 +100,9 @@ class Settings(object):
         if self.__window__ is not None:
             self.__window__.destroy()
             self.__window__ = None
-    def window(self, mainWindow: tk.Tk):
+    def window(self, mainWindow: ttk.Window):
         if self.__window__ is None:
-            self.__window__ = tk.Toplevel(mainWindow)
+            self.__window__ = ttk.Toplevel(mainWindow)
 
             # set title
             self.__window__.title(self.language.settings)

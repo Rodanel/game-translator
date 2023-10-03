@@ -75,7 +75,7 @@ def fix_console(line):
 # renpy panel object
 class RenpyFrame(object):
         
-    def __init__(self, root: tk.Tk, filename:str):
+    def __init__(self, root: ttk.Window, filename:str):
 
         self.__cancelled__ = False
         self.__decompileRpycProcess__ = None
@@ -169,7 +169,7 @@ class RenpyFrame(object):
         settings.onUpdate(Settings.LANGUAGE, self.update_widget_texts)
     # element properties
     @property
-    def root(self) -> tk.Tk:
+    def root(self) -> ttk.Window:
         return self.__root__
     @property
     def filename(self) -> str:
