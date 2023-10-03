@@ -84,10 +84,6 @@ def translate():
                 renpyFrame.cancel()
             except:
                 print(traceback.format_exc())
-            finally:
-                startButton["state"] = "normal"
-                settingsButton["state"] = "normal"
-                zipButton["state"] = "normal"
     else:
         if gameType == GameType.RENPY and renpyFrame is not None:
             try:
