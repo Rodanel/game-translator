@@ -96,7 +96,7 @@ class LanguageBase(object):
     @classmethod
     @property
     def lockTranslation(cls):
-        return "Lock translation. (Locks the game to this language. No need to update screens.rpy file for adding language options if checked.)"
+        return "Lock the game to this translation."
     
     @classmethod
     @property

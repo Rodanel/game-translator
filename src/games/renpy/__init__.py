@@ -12,14 +12,17 @@ import string
 import googletrans
 from googletrans import Translator
 import traceback
-from tkinter import Tk, StringVar, BooleanVar, Frame, Label, Entry, Checkbutton, messagebox, scrolledtext, END, WORD, ttk, Button
+import tkinter as tk
+from tkinter import messagebox
+import ttkbootstrap as ttk
+from ttkbootstrap import ScrolledText, Checkbutton
+from ttkbootstrap.constants import *
 
 from src.games.detect_game import GameType
 from src.games.renpy.rpa import RpaEditor
 from src.games.renpy.unrpyc import unren_content
 from src.style.frame import set_frame_attrs
 from src.utils.settings import settings, Settings
-from src.style.buttons import enabledButtonColor, disabledButtonColor, enabledRedButtonColor, disabledRedButtonColor, toggle_button_state
 
 CREATE_NO_WINDOW = 0x08000000
 
@@ -72,7 +75,7 @@ def fix_console(line):
 # renpy panel object
 class RenpyFrame(object):
         
-    def __init__(self, root: Tk, filename:str):
+    def __init__(self, root: tk.Tk, filename:str):
 
         self.__cancelled__ = False
         self.__decompileRpycProcess__ = None
@@ -85,38 +88,38 @@ class RenpyFrame(object):
         self.__frame__ = set_frame_attrs(self.__frame__, root)
         wrap_length = 500
         tb_width = 40
-        self.__titleLabel__ = Label(self.__frame__, text=settings.language.renpyGameTranslation, wraplength=wrap_length)
-        self.__titleLabel__.pack(side="top", fill="x", anchor="n")
-        self.__gamePathLabel__ = Label(self.__frame__, text=settings.language.gameName(filePath=self.__filename__), wraplength=wrap_length)
-        self.__gamePathLabel__.pack(side="top", fill="x", anchor="n")
+        self.__titleLabel__ = ttk.Label(self.__frame__, text=settings.language.renpyGameTranslation, wraplength=wrap_length)
+        self.__titleLabel__.pack(side="top", anchor="center")
+        self.__gamePathLabel__ = ttk.Label(self.__frame__, text=settings.language.gameName(filePath=self.__filename__), wraplength=wrap_length)
+        self.__gamePathLabel__.pack(side="top", anchor="center")
     
-        self.__languageNameFrame__ = Frame(self.__frame__)
+        self.__languageNameFrame__ = ttk.Frame(self.__frame__)
         self.__languageNameFrame__.pack(side="top", fill="x", anchor="n")
-        self.__languageNameLabel__ = Label(self.__languageNameFrame__, text=settings.language.languageNameDot)
+        self.__languageNameLabel__ = ttk.Label(self.__languageNameFrame__, text=settings.language.languageNameDot)
         self.__languageNameLabel__.pack(side="left", anchor="e")
-        self.__languageName__ = StringVar()
-        self.__languageNameEntry__ = Entry(self.__languageNameFrame__, textvariable=self.__languageName__, width=tb_width)
+        self.__languageName__ = ttk.StringVar()
+        self.__languageNameEntry__ = ttk.Entry(self.__languageNameFrame__, textvariable=self.__languageName__, width=tb_width)
         self.__languageNameEntry__.pack(side="right")
     
-        self.__languageFolderNameFrame__ = Frame(self.__frame__)
+        self.__languageFolderNameFrame__ = ttk.Frame(self.__frame__)
         self.__languageFolderNameFrame__.pack(side="top", fill="x", anchor="n")
-        self.__languageFolderNameLabel__ = Label(self.__languageFolderNameFrame__, text=settings.language.languageFolderNameDot)
+        self.__languageFolderNameLabel__ = ttk.Label(self.__languageFolderNameFrame__, text=settings.language.languageFolderNameDot)
         self.__languageFolderNameLabel__.pack(side="left", anchor="e")
-        self.__languageFolderName__ = StringVar()
-        self.__languageFolderNameEntry__ = Entry(self.__languageFolderNameFrame__, textvariable=self.__languageFolderName__, width=tb_width)
+        self.__languageFolderName__ = ttk.StringVar()
+        self.__languageFolderNameEntry__ = ttk.Entry(self.__languageFolderNameFrame__, textvariable=self.__languageFolderName__, width=tb_width)
         self.__languageFolderNameEntry__.pack(side="right")
         
-        self.__lockLocalization__ = BooleanVar()
-        self.__lockLocalizationCheck__ = Checkbutton(self.__frame__, text= settings.language.lockTranslation, variable=self.__lockLocalization__, onvalue=True, offvalue=False, wraplength=wrap_length)
+        self.__lockLocalization__ = ttk.BooleanVar()
+        self.__lockLocalizationCheck__ = ttk.Checkbutton(self.__frame__, style="Roundtoggle.Toolbutton", padding=5, text=settings.language.lockTranslation, variable=self.__lockLocalization__, onvalue=True, offvalue=False)
         self.__lockLocalizationCheck__.pack(side="top", fill="x", anchor="n")
-        self.__extractRpaArchives__ = BooleanVar()
-        self.__extractRpaArchivesCheck__ = Checkbutton(self.__frame__, text=settings.language.extractRPAArhives, variable=self.__extractRpaArchives__, onvalue=True, offvalue=False)
+        self.__extractRpaArchives__ = ttk.BooleanVar()
+        self.__extractRpaArchivesCheck__ = ttk.Checkbutton(self.__frame__, style="Roundtoggle.Toolbutton", padding=5, text=settings.language.extractRPAArhives, variable=self.__extractRpaArchives__, onvalue=True, offvalue=False)
         self.__extractRpaArchivesCheck__.pack(side="top", fill="x", anchor="n")
-        self.__extractRpaArchivesCheck__.select()
+        self.__extractRpaArchives__.set(True)
 
-        self.__ignoredRpaFilesFrame__ = Frame(self.__frame__)
+        self.__ignoredRpaFilesFrame__ = ttk.Frame(self.__frame__)
         self.__ignoredRpaFilesFrame__.pack(side="top", fill="x", anchor="n")
-        self.__ignoredRpaFile__ = StringVar()
+        self.__ignoredRpaFile__ = ttk.StringVar()
         self.__ignoredRpaFilesCombobox__ = ttk.Combobox(self.__ignoredRpaFilesFrame__, textvariable=self.__ignoredRpaFile__)
         _rpaFiles = [path.basename(fname) for fname in listdir(self.gamedir) if fname.endswith(".rpa")]
         self.__ignoredRpaFilesCombobox__.pack(side="left", fill="x", anchor="w", expand=True)
@@ -124,49 +127,49 @@ class RenpyFrame(object):
         self.__ignoredRpaFilesCombobox__["state"] = "readonly"
         if len(_rpaFiles) > 0:
             self.__ignoredRpaFile__.set(_rpaFiles[0])
-        self.__ignoredRpaFileText__ = StringVar()
-        self.__ignoredRpaFileListLabel__ = Label(self.__frame__, textvariable=self.__ignoredRpaFileText__, wraplength=wrap_length)
-        self.__ignoredRpaFileListLabel__.pack(side="top", fill="x", anchor="n")
+        self.__ignoredRpaFileText__ = ttk.StringVar()
+        self.__ignoredRpaFileListLabel__ = ttk.Label(self.__frame__, textvariable=self.__ignoredRpaFileText__, wraplength=wrap_length)
+        self.__ignoredRpaFileListLabel__.pack(side="top", anchor="center")
         
-        self.__ignoredRpaFilesRemoveButton__ = Button(self.__ignoredRpaFilesFrame__, text=settings.language.remove, background=enabledRedButtonColor, disabledforeground="white", foreground="white", command=self.__remove_IgnoredRPAFile)
+        self.__ignoredRpaFilesRemoveButton__ = ttk.Button(self.__ignoredRpaFilesFrame__, bootstyle=DANGER, text=settings.language.remove, command=self.__remove_IgnoredRPAFile)
         self.__ignoredRpaFilesRemoveButton__.pack(side="right")
-        self.__ignoredRpaFilesMargin1__ = Frame(self.__ignoredRpaFilesFrame__, width=2)
+        self.__ignoredRpaFilesMargin1__ = ttk.Frame(self.__ignoredRpaFilesFrame__, width=2)
         self.__ignoredRpaFilesMargin1__.pack(side="right")
-        self.__ignoredRpaFilesAddButton__ = Button(self.__ignoredRpaFilesFrame__, text=settings.language.add, background=enabledButtonColor, disabledforeground="white", foreground="white", command=self.__add_IgnoredRPAFile)
+        self.__ignoredRpaFilesAddButton__ = ttk.Button(self.__ignoredRpaFilesFrame__, bootstyle=SUCCESS, text=settings.language.add, command=self.__add_IgnoredRPAFile)
         self.__ignoredRpaFilesAddButton__.pack(side="right")
-        self.__ignoredRpaFilesMargin2__ = Frame(self.__ignoredRpaFilesFrame__, width=2)
+        self.__ignoredRpaFilesMargin2__ = ttk.Frame(self.__ignoredRpaFilesFrame__, width=2)
         self.__ignoredRpaFilesMargin2__.pack(side="right")
 
-        self.__decompileRpycFiles__ = BooleanVar()
-        self.__decompileRpycFilesCheck__ = Checkbutton(self.__frame__, text=settings.language.decompileRPYCFiles, variable=self.__decompileRpycFiles__, onvalue=True, offvalue=False)
+        self.__decompileRpycFiles__ = ttk.BooleanVar()
+        self.__decompileRpycFilesCheck__ = ttk.Checkbutton(self.__frame__, style="Roundtoggle.Toolbutton", padding=5, text=settings.language.decompileRPYCFiles, variable=self.__decompileRpycFiles__, onvalue=True, offvalue=False)
         self.__decompileRpycFilesCheck__.pack(side="top", fill="x", anchor="n")
-        self.__decompileRpycFilesCheck__.select()
+        self.__decompileRpycFiles__.set(True)
 
-        self.__forceRegenerateTranslation__ = BooleanVar()
-        self.__forceRegenerateTranslationCheck__ = Checkbutton(self.__frame__, text=settings.language.forceRegenerateTranslation, variable=self.__forceRegenerateTranslation__, onvalue=True, offvalue=False, wraplength=wrap_length)
+        self.__forceRegenerateTranslation__ = ttk.BooleanVar()
+        self.__forceRegenerateTranslationCheck__ = ttk.Checkbutton(self.__frame__, style="Roundtoggle.Toolbutton", padding=5, text=settings.language.forceRegenerateTranslation, variable=self.__forceRegenerateTranslation__, onvalue=True, offvalue=False)
         self.__forceRegenerateTranslationCheck__.pack(side="top", fill="x", anchor="n")
         
-        self.__translateWithGoogleTranslate__ = BooleanVar()
-        self.__translateWithGoogleTranslateCheck__ = Checkbutton(self.__frame__, text=settings.language.translateWithGoogle, variable=self.__translateWithGoogleTranslate__, onvalue=True, offvalue=False)
+        self.__translateWithGoogleTranslate__ = ttk.BooleanVar()
+        self.__translateWithGoogleTranslateCheck__ = ttk.Checkbutton(self.__frame__, style="Roundtoggle.Toolbutton", padding=5, text=settings.language.translateWithGoogle, variable=self.__translateWithGoogleTranslate__, onvalue=True, offvalue=False)
         self.__translateWithGoogleTranslateCheck__.pack(side="top", fill="x")
-        self.__googleTranslateFrame__ = Frame(self.__frame__)
+        self.__googleTranslateFrame__ = ttk.Frame(self.__frame__)
         self.__googleTranslateFrame__.pack(side="top", anchor="c")
-        self.__googleTranslateLanguageLabel__ = Label(self.__googleTranslateFrame__, text=settings.language.translateToDot)
+        self.__googleTranslateLanguageLabel__ = ttk.Label(self.__googleTranslateFrame__, text=settings.language.translateToDot)
         self.__googleTranslateLanguageLabel__.pack(side="left")
-        self.__googleTranslateLanguage__ = StringVar()
+        self.__googleTranslateLanguage__ = ttk.StringVar()
         self.__googleTranslateLanguageCombobox__ = ttk.Combobox(self.__googleTranslateFrame__, textvariable=self.__googleTranslateLanguage__)
         self.__googleTranslateLanguageCombobox__["values"] = [key.capitalize() for key, value in googletrans.LANGCODES.items()]
         self.__googleTranslateLanguageCombobox__.pack(side="left")
         self.__googleTranslateLanguageCombobox__["state"] = "disabled"
 
-        self.__progressText__ = scrolledtext.ScrolledText(self.__frame__, wrap=WORD, state="disabled")
+        self.__progressText__ = ScrolledText(self.__frame__, wrap=WORD, state="disabled")
         self.__progressText__.pack(side="top", fill="both", expand=True)
         self.__progressOrj__ = ""
         self.__update_props()
         settings.onUpdate(Settings.LANGUAGE, self.update_widget_texts)
     # element properties
     @property
-    def root(self) -> Tk:
+    def root(self) -> tk.Tk:
         return self.__root__
     @property
     def filename(self) -> str:
@@ -269,16 +272,12 @@ class RenpyFrame(object):
         if disabled:
             self.__ignoredRpaFilesCombobox__["state"] = "disabled"
             self.__ignoredRpaFilesAddButton__["state"] = "disabled"
-            self.__ignoredRpaFilesAddButton__["background"] = disabledButtonColor
             self.__ignoredRpaFilesRemoveButton__["state"] = "disabled"
-            self.__ignoredRpaFilesRemoveButton__["background"] = disabledRedButtonColor
             self.__ignoredRpaFileListLabel__["state"] = "disabled"
         else:
             self.__ignoredRpaFilesCombobox__["state"] = "readonly" if self.extractRpaArchives else "disabled"
             self.__ignoredRpaFilesAddButton__["state"] = "normal" if self.extractRpaArchives else "disabled"
-            self.__ignoredRpaFilesAddButton__["background"] = enabledButtonColor if self.extractRpaArchives else disabledButtonColor
             self.__ignoredRpaFilesRemoveButton__["state"] = "normal" if self.extractRpaArchives else "disabled"
-            self.__ignoredRpaFilesRemoveButton__["background"] = enabledRedButtonColor if self.extractRpaArchives else disabledRedButtonColor
             self.__ignoredRpaFileListLabel__["state"] = "normal" if self.extractRpaArchives else "disabled"
     def __restore_ignoredRpaFiles(self):
         _files = self.__get_ignored_files()

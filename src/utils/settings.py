@@ -2,9 +2,10 @@ import json
 from os import path, getcwd
 from types import *
 from src.games.detect_game import GameType
-from tkinter import *
-from tkinter import ttk, messagebox
-from src.style.buttons import enabledButtonColor, enabledRedButtonColor
+import tkinter as tk
+from tkinter import messagebox
+import ttkbootstrap as ttk
+from ttkbootstrap.constants import *
 from src.utils.languages.base import LanguageBase
 from src.utils.languages.turkish import Turkish
 from src.utils.languages.enum import Language
@@ -99,44 +100,46 @@ class Settings(object):
         if self.__window__ is not None:
             self.__window__.destroy()
             self.__window__ = None
-    def window(self, mainWindow: Tk):
+    def window(self, mainWindow: tk.Tk):
         if self.__window__ is None:
-            self.__window__ = Toplevel(mainWindow)
+            self.__window__ = tk.Toplevel(mainWindow)
 
             # set title
             self.__window__.title(self.language.settings)
-            _screen_width = self.__window__.winfo_screenwidth()
-            _screen_height = self.__window__.winfo_screenheight()
+            _loc_x = mainWindow.winfo_x()
+            _loc_y = mainWindow.winfo_y()
             _window_width = 300
-            _window_height = 50
+            _window_height = 70
             # find the center point
-            _center_x = int(_screen_width / 2 - _window_width / 2)
-            _center_y = int(_screen_height / 2 - _window_height / 2)
+            _center_x = int(_loc_x +(mainWindow.winfo_width() / 2) - (_window_width / 2))
+            _center_y = int(_loc_y +(mainWindow.winfo_height() / 2) - (_window_height / 2))
             self.__window__.geometry(f'{_window_width}x{_window_height}+{_center_x}+{_center_y}')
             self.__window__.resizable(False, False)
             self.__window__.minsize(_window_width, _window_height)
             self.__window__.protocol("WM_DELETE_WINDOW", self.close_window)
             #self.__window__.pack(side="top", fill="both", expand=True)
-            settingsLanguageFrame = Frame(self.__window__)
+            settingsMainFrame = ttk.Frame(self.__window__, padding=5)
+            settingsMainFrame.pack(side=TOP, fill=BOTH, expand=True)
+            settingsLanguageFrame = ttk.Frame(settingsMainFrame)
             settingsLanguageFrame.pack(side=TOP, fill=X, anchor=N)
-            settingsLanguageLabel = Label(settingsLanguageFrame, text=self.language.languageDot)
+            settingsLanguageLabel = ttk.Label(settingsLanguageFrame, text=self.language.languageDot)
             settingsLanguageLabel.pack(side=LEFT)
-            settingsMargin = Frame(settingsLanguageFrame, width=5)
+            settingsMargin = ttk.Frame(settingsLanguageFrame, width=5)
             settingsMargin.pack(side=LEFT)
-            settingsLanguage = StringVar()
+            settingsLanguage = ttk.StringVar()
             settingsLanguageCombobox = ttk.Combobox(settingsLanguageFrame, textvariable=settingsLanguage)
             settingsLanguageCombobox["values"] = [str(Language.ENGLISH), str(Language.TURKISH)]
             settingsLanguage.set(self.languageText)
             settingsLanguageCombobox.pack(side=RIGHT, fill=X, expand=True)
             settingsLanguageCombobox["state"] = "readonly"
-            settingsButtonsFrame = Frame(self.__window__)
-            settingsButtonsFrame.pack(side="bottom", fill="x")
-            settingsSaveButton = Button(settingsButtonsFrame, text=settings.language.saveButton, background=enabledButtonColor, foreground="white", command=lambda:self.save_language(settingsLanguage.get()))
-            settingsSaveButton.pack(side="right")
-            settingsButtonsMargin = Frame(settingsButtonsFrame, width=5)
-            settingsButtonsMargin.pack(side="right")
-            settingsCancelButton = Button(settingsButtonsFrame, text=settings.language.cancelButton, background=enabledRedButtonColor, foreground="white", command=self.close_window)
-            settingsCancelButton.pack(side="right")
+            settingsButtonsFrame = ttk.Frame(settingsMainFrame)
+            settingsButtonsFrame.pack(side=BOTTOM, fill=X)
+            settingsSaveButton = ttk.Button(settingsButtonsFrame, text=settings.language.saveButton, bootstyle=SUCCESS, command=lambda:self.save_language(settingsLanguage.get()))
+            settingsSaveButton.pack(side=RIGHT)
+            settingsButtonsMargin = ttk.Frame(settingsButtonsFrame, width=5)
+            settingsButtonsMargin.pack(side=RIGHT)
+            settingsCancelButton = ttk.Button(settingsButtonsFrame, text=settings.language.cancelButton, bootstyle=DANGER, command=self.close_window)
+            settingsCancelButton.pack(side=RIGHT)
             self.__window__.wait_window()
         else:
             messagebox.showwarning("Already Active", message="Settings window already is active.")

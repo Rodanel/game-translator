@@ -98,7 +98,7 @@ class Turkish(LanguageBase):
     @classmethod
     @property
     def lockTranslation(cls):
-        return "Oyunu bu dile kilitle. (Bu seçenek seçiliyse, oyunu bu dile kilitler ve dil ayarı eklemek için screens.rpy dosyasını düzenlemenize gerek kalmaz.)"
+        return "Oyunu bu dile kilitle."
     
     @classmethod
     @property
