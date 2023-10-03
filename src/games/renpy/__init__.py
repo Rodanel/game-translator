@@ -1,5 +1,6 @@
 import os
 from os import path, listdir, remove, rmdir, environ as myenv, mkdir, walk
+import shutil
 import zipfile
 import signal
 import re
@@ -395,12 +396,12 @@ class RenpyFrame(object):
     def clear_temp_rpyc_decompilers(self):
         if path.exists(self.unrenfile):
             remove(self.unrenfile)
+        cache_path = path.join(self.dirname, "__pycache__")
+        if path.exists(cache_path):
+            shutil.rmtree(cache_path)
         decompiler_path = path.join(self.dirname, "decompiler")
         if path.exists(decompiler_path):
-            for decompiler_file in listdir(decompiler_path):
-                remove(path.join(decompiler_path, decompiler_file))
-        if path.exists(decompiler_path):
-            rmdir(decompiler_path)
+            shutil.rmtree(decompiler_path)
         _decomp_cab = path.join(self.dirname, "_decomp.cab")
         if path.exists(_decomp_cab):
             remove(_decomp_cab)
