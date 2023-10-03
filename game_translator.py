@@ -82,11 +82,12 @@ def translate():
             try:
                 startButton["state"] = "disabled"
                 renpyFrame.cancel()
-                settingsButton["state"] = "normal"
             except:
-                startButton["state"] = "normal"
-                settingsButton["state"] = "disabled"
                 print(traceback.format_exc())
+            finally:
+                startButton["state"] = "normal"
+                settingsButton["state"] = "normal"
+                zipButton["state"] = "normal"
     else:
         if gameType == GameType.RENPY and renpyFrame is not None:
             try:
@@ -94,17 +95,17 @@ def translate():
                 started = True
                 browseButton["state"] = "disabled"
                 settingsButton["state"] = "disabled"
+                zipButton["state"] = "disabled"
                 renpyFrame.generate_translation()
-                startButton["text"] = settings.language.startButton
-                browseButton["state"] = "normal"
-                startButton["state"] = "normal"
-                settingsButton["state"] = "normal"
             except Exception as e:
                 messagebox.showerror(title=settings.language.errorTitle, message=str(e))
+            finally:
                 startButton["text"] = settings.language.startButton
                 browseButton["state"] = "normal"
                 startButton["state"] = "normal"
                 settingsButton["state"] = "normal"
+                zipButton["state"] = "normal"
+
             started = False
         elif gameType == GameType.NONE:
             messagebox.showwarning(title=settings.language.unsupportedGameTitle, message=settings.language.unsupportedGameTitle(filePath=filename))
@@ -116,12 +117,16 @@ def start_translation():
 def zip_game():
     if gameType == GameType.RENPY and renpyFrame is not None:
         try:
+            browseButton["state"] = "disabled"
+            startButton["state"] = "disabled"
             zipButton["state"] = "disabled"
             renpyFrame.archive()
-            zipButton["state"] = "normal"
         except:
-            zipButton["state"] = "normal"
             print(traceback.format_exc())
+        finally:
+            browseButton["state"] = "normal"
+            startButton["state"] = "normal"
+            zipButton["state"] = "normal"
     pass
 
 def start_zipping():

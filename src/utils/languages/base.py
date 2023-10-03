@@ -373,9 +373,8 @@ class LanguageBase(object):
         return "Added \""+filePath+"\" file to archive."
 
     @classmethod
-    @property
-    def createdArhiveSuccess(cls):
-        return "Created archive successfully!"
+    def createdArchiveSuccess(cls, archivePath: str):
+        return "Created archive in \""+archivePath+"\" successfully!"
 
     @classmethod
     @property

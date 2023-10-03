@@ -377,8 +377,8 @@ class Turkish(LanguageBase):
 
     @classmethod
     @property
-    def createdArhiveSuccess(cls):
-        return "Arşiv başarıyla oluşturuldu!"
+    def createdArchiveSuccess(cls, archivePath: str):
+        return "Arşiv \""+archivePath+"\" konumunda başarıyla oluşturuldu!"
 
     @classmethod
     @property

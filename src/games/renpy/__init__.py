@@ -793,13 +793,13 @@ class RenpyFrame(object):
             self.clearProgress()
             bname = path.basename(self.filename)
             gname = path.splitext(bname)[0]
-            arhivepath = self.get_zip_name(self.dirname, gname)
-            dname = path.dirname(arhivepath)
-            self.progressOrj = "Started generating a zip archive in \""+arhivepath+"\"..."
-            self.progress = settings.language.zipStarted(arhivePath=arhivepath)
+            archivepath = self.get_zip_name(self.dirname, gname)
+            dname = path.dirname(archivepath)
+            self.progressOrj = "Started generating a zip archive in \""+archivepath+"\"..."
+            self.progress = settings.language.zipStarted(arhivePath=archivepath)
             if not path.isdir(dname):
                 mkdir(dname)
-            zipobj = zipfile.ZipFile(arhivepath, 'w', zipfile.ZIP_DEFLATED)
+            zipobj = zipfile.ZipFile(archivepath, 'w', zipfile.ZIP_DEFLATED)
             rootlen = len(self.gamedir) + 1
             for base, dirs, files in walk(self.gamedir):
                 for file in files:
@@ -810,11 +810,11 @@ class RenpyFrame(object):
                         self.progress = settings.language.addedFileToArchive(filePath=fn)
             self.progressOrj = ""
             self.progressOrj = "Creating archive completed!"
-            self.progress = settings.language.createdArhiveSuccess
+            self.progress = settings.language.createdArchiveSuccess(archivePath=archivepath)
         except:
             error_text = traceback.format_exc()
             print(error_text)
             self.progressOrj = "Archive could not be created!\n\n"+error_text
             self.progress = settings.language.creatingArchiveError(error=error_text)
             messagebox.showerror(settings.language.creatingArchiveErrorTitle, message=settings.language.creatingArchiveError())
-        self.save_progress()
+            self.save_progress()
