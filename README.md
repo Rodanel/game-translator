@@ -56,8 +56,8 @@ class Language(Enum):
 pip install -r requirements.txt
 ```
 
-- Build
+- Build (Builds in "{project_folder}/build")
 
 ```
-python setup.py py2exe
+python setup.py build
 ```

@@ -9,13 +9,15 @@ from src.style.frame import set_frame_attrs
 from src.games import renpy
 from src.games.detect_game import detect_game, GameType
 from src.utils.settings import settings, Settings
+from src.utils.assets import MyAssets
+
 
 # initialize window
-root = ttk.Window(title="Game Translator by Rodanel", iconphoto='assets/icon.jpg')
+root = ttk.Window(title="Game Translator by Rodanel", iconphoto=str(MyAssets.icon))
 
-#window_icon = PhotoImage(file = 'assets/icon.jpg')
+#window_icon = PhotoImage(file = MyAssets.icon)
 #root.iconphoto(False, window_icon)
-#root.iconbitmap(default='assets/favicon.ico')
+#root.iconbitmap(default=MyAssets.favicon)
 # set size
 window_width = 500
 window_height = 500
@@ -39,7 +41,7 @@ settingsButton = ttk.Button(root, text=settings.language.settings, bootstyle=(IN
 settingsButton.pack(side=TOP, anchor=E)
 
 # set icon
-# root.iconbitmap('./assets/icon.ico')
+# root.iconbitmap(MyAssets.icon)
 
 # empty panel
 emptyFrame = None
@@ -190,6 +192,8 @@ def showFrame():
     else:
         destroyRenpyFrame()
 showFrame()
+
+test = tk.StringVar()
 
 # show window
 root.mainloop()
