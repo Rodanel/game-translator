@@ -778,9 +778,11 @@ class RenpyFrame(object):
                     self.__disable_all_controls(True)
                     #self.start_loading()
                     error_occurred = False
+                    generated_translation_files = False
                     if self.__extract_rpa_archives():
                         if self.__decompile_rpyc_files():
                             if self.__generate_translation_files():
+                                generated_translation_files = True
                                 if self.__google_translate():
                                     if self.__generate_translation_lock_file():
                                         pass
@@ -804,7 +806,7 @@ class RenpyFrame(object):
                     if not self.extractRpaArchives and not self.decompileRpycFiles and (path.exists(self.tlfilesdir) and not self.forceRegenerateTranslation) and not self.translatewithGoogleTranslate and not self.lockLocalization:
                         all_skipped = True
                     if not all_skipped and not error_occurred:
-                        if not self.lockLocalization:
+                        if not self.lockLocalization and not self.cancelled and generated_translation_files:
                             self.progressOrj = self.progress = "\nvbox:"
                             self.progressOrj = self.progress = "    style_prefix \"radio\""
                             self.progressOrj = self.progress = "    label _(\"Language\")"
