@@ -18,6 +18,7 @@ from tkinter import messagebox
 import ttkbootstrap as ttk
 from ttkbootstrap import ScrolledText, Checkbutton
 from ttkbootstrap.constants import *
+import time
 
 from src.games.detect_game import GameType
 from src.games.renpy.rpa import RpaEditor
@@ -621,9 +622,12 @@ class RenpyFrame(object):
                                         if len(translatable_texts.keys()) > 0:
                                             self.progressOrj = "Connecting with google translate..."
                                             self.progress = settings.language.connectingGoogleTrans
+                                            start_time = time.time()
                                             translated = translator.translate([value["text"] for key,value in translatable_texts.items()], dest=googletrans.LANGCODES[self.googleTranslateLanguage.lower()])
-                                            self.progressOrj = "Strings translated sucessfully!"
-                                            self.progress = settings.language.stringsTranslated
+                                            end_time = time.time()
+                                            total_seconds = int(end_time - start_time)
+                                            self.progressOrj = "Strings translated in "+str(total_seconds)+ " seconds!"
+                                            self.progress = settings.language.stringsTranslated(seconds=str(total_seconds))
                                             for tr_i in range(len(translated)):
                                                 if self.cancelled:
                                                     tlfile.closed

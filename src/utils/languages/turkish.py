@@ -264,9 +264,8 @@ class Turkish(LanguageBase):
         return "Google translate ile bağlantı kuruluyor. Dosyadaki diyalogların uzunluğu ve sayısına göre bu işlem uzun sürebilir..."
 
     @classmethod
-    @property
-    def stringsTranslated(cls):
-        return "Yazılar başarıyla çevrildi!"
+    def stringsTranslated(cls, seconds:str):
+        return "Yazılar "+seconds+" saniyede çevrildi!"
 
     @classmethod
     def translatingFileSuccess(cls, filePath: str):

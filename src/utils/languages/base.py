@@ -261,9 +261,8 @@ class LanguageBase(object):
         return "Connecting with google translate. Depending on the length of the dialogues in file, this may take time..."
 
     @classmethod
-    @property
-    def stringsTranslated(cls):
-        return "Strings translated sucessfully!"
+    def stringsTranslated(cls, seconds:str):
+        return "Strings translated in "+seconds+ " seconds!"
 
     @classmethod
     def translatingFileSuccess(cls, filePath: str):
