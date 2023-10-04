@@ -98,6 +98,7 @@ class Settings(object):
         self.__onUpdates__.append([prop, func])
     def close_window(self):
         if self.__window__ is not None:
+            self.__window__.grab_release()
             self.__window__.destroy()
             self.__window__ = None
     def window(self, mainWindow: ttk.Window):
@@ -140,6 +141,7 @@ class Settings(object):
             settingsButtonsMargin.pack(side=RIGHT)
             settingsCancelButton = ttk.Button(settingsButtonsFrame, text=settings.language.cancelButton, bootstyle=DANGER, command=self.close_window)
             settingsCancelButton.pack(side=RIGHT)
+            self.__window__.grab_set()
             self.__window__.wait_window()
         else:
             messagebox.showwarning("Already Active", message="Settings window already is active.")
