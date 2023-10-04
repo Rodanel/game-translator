@@ -58,7 +58,7 @@ class LanguageBase(object):
     @classmethod
     @property
     def detectedRenpyDesc(cls):
-        return "This tool may not be suitable for renpy versions of some games.\nIf you encounter an error, please let me know."
+        return "This tool may not be suitable for renpy versions of some games. And it may broke your game.\n\nDon't forget to backup the game!\n\nIf you encounter an error, please let me know."
     
     @classmethod
     @property
@@ -303,8 +303,8 @@ class LanguageBase(object):
         return "Connecting with google translate. Depending on the length of the dialogues in file, this may take time..."
 
     @classmethod
-    def stringsTranslated(cls, seconds:str):
-        return "Strings translated in "+seconds+ " seconds!"
+    def stringsTranslated(cls, seconds:int):
+        return "Strings translated in "+str(seconds)+ " second%s!" % ("s" if seconds > 1 else "")
 
     @classmethod
     def translatingFileSuccess(cls, filePath: str):

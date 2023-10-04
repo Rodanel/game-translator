@@ -689,7 +689,7 @@ class RenpyFrame(object):
                                             end_time = time.time()
                                             total_seconds = int(end_time - start_time)
                                             self.progressOrj = "Strings translated in "+str(total_seconds)+ " seconds!"
-                                            self.progress = settings.language.stringsTranslated(seconds=str(total_seconds))
+                                            self.progress = settings.language.stringsTranslated(seconds=total_seconds)
                                             for tr_i in range(len(translated)):
                                                 if self.cancelled:
                                                     tlfile.closed

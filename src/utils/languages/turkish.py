@@ -60,7 +60,7 @@ class Turkish(LanguageBase):
     @classmethod
     @property
     def detectedRenpyDesc(cls):
-        return "Bu araç bazı oyunların renpy versiyonlarına uygun olmayabilir.\nEğer bir hata ile karşılaşırsanız lütfen bana bildirin."
+        return "Bu araç bazı oyunların renpy versiyonlarına uygun olmayabilir. Ve oyununuzu bozabilir.\n\nBu yüzden oyunu yedek almayı unutmayın.\n\nEğer bir hata ile karşılaşırsanız lütfen bana bildirin."
     
     @classmethod
     @property
@@ -306,8 +306,8 @@ class Turkish(LanguageBase):
         return "Google translate ile bağlantı kuruluyor. Dosyadaki diyalogların uzunluğu ve sayısına göre bu işlem uzun sürebilir..."
 
     @classmethod
-    def stringsTranslated(cls, seconds:str):
-        return "Yazılar "+seconds+" saniyede çevrildi!"
+    def stringsTranslated(cls, seconds:int):
+        return "Yazılar "+str(seconds)+" saniyede çevrildi!"
 
     @classmethod
     def translatingFileSuccess(cls, filePath: str):
