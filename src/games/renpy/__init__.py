@@ -805,8 +805,8 @@ class RenpyFrame(object):
                     all_skipped = False
                     if not self.extractRpaArchives and not self.decompileRpycFiles and (path.exists(self.tlfilesdir) and not self.forceRegenerateTranslation) and not self.translatewithGoogleTranslate and not self.lockLocalization:
                         all_skipped = True
-                    if not all_skipped and not error_occurred:
-                        if not self.lockLocalization and not self.cancelled and generated_translation_files:
+                    if not all_skipped:
+                        if not self.lockLocalization and not self.cancelled and generated_translation_files and not error_occurred:
                             self.progressOrj = self.progress = "\nvbox:"
                             self.progressOrj = self.progress = "    style_prefix \"radio\""
                             self.progressOrj = self.progress = "    label _(\"Language\")"
