@@ -463,7 +463,69 @@ class RenpyFrame(object):
             self.progressOrj = "Extracting rpa archives skipped."
             self.progress = settings.language.extractRPASkipped
         return True
-
+    def __fix_decompile_rpyc_files_line(self, text, translate:bool=True):
+        
+        if text == "No script files to decompile.":
+            if translate:
+                return settings.language.noScriptFiles
+        elif text == "Searching for rpyc files...":
+            if translate:
+                return settings.language.searchingForRpycFiles
+        else:
+            p1 = re.compile('Decompiling (.*) to (.*)...')
+            result1 = p1.search(text)
+            if result1 is not None:
+                if translate:
+                    return settings.language.decompilingRpycTo(rpycFilePath=result1.group(1), rpyFilePath=result1.group(2))
+                else:
+                    return "Decompiling \""+result1.group(1)+"\" to \""+result1.group(2)+"\"..."
+            else:
+                p2 = re.compile('Error while decompiling (.*):',)
+                result2 = p2.search(text)
+                if result2 is not None:
+                    if translate:
+                        return settings.language.decompilingRpycError(filePath=result2.group(1))
+                    else:
+                        return "Error while decompiling \""+result2.group(1)+"\":"
+                else:
+                    p3 = re.compile('File not found: (.*)')
+                    result3 = p3.search(text)
+                    if result3 is not None:
+                        if translate:
+                            settings.language.fileNotFound(filePath=result3.group(1))
+                        else:
+                            return "File not found: \""+result3.group(1)+"\""
+                    else:
+                        p4 = re.compile('Decompilation of (.*) script file(.*)successful')
+                        result4 = p4.search(text)
+                        if result4 is not None:
+                            if translate:
+                                return settings.language.decompileRpycSuccess(fileCount=result4.group(1), isMultipleFiles=True if result4.group(2) == "s " else False)
+                        else:
+                            p5 = re.compile('Decompilation of (.*) file(.*)failed')
+                            result5 = p5.search(text)
+                            if result5 is not None:
+                                if translate:
+                                    return settings.language.decompileRpycFailed(fileCount=result5.group(1), isMultipleFiles=True if result5.group(2) == "s " else False)
+                            else:
+                                p6 = re.compile('Decompilation of (.*) file(.*)successful, but decompilation of (.*) file(.*)failed')
+                                result6 = p6.search(text)
+                                if result6 is not None:
+                                    if translate:
+                                        return settings.language.decompileRpycSuccessAndFail(successFileCount=result6.group(1), isSuccessMultipleFiles=True if result6.group(2) == "s " else False,failFileCount=result6.group(3),  isFailMultipleFiles=True if result6.group(4) == "s " else False)
+                                else:
+                                    p7 = re.compile('(.*) already exists - skipped')
+                                    result7 = p7.search(text)
+                                    if result7 is not None:
+                                        if translate:
+                                            return settings.language.decompilingRpycFileSkipped(rpycFilePath=result7.group(1))
+                                    else:
+                                        p8 = re.compile('Working in: (.*)')
+                                        result8 = p8.search(text)
+                                        if result8 is not None:
+                                            if translate:
+                                                return settings.language.workingIn(folderPath=result8.group(1))
+        return text
     def __decompile_rpyc_files(self):
         if self.cancelled:
             return True
@@ -482,8 +544,8 @@ class RenpyFrame(object):
                     if not line:
                         break
                     else:
-                        self.progressOrj = fix_console(line)
-                        self.progress = fix_console(line)
+                        self.progressOrj = self.__fix_decompile_rpyc_files_line(fix_console(line), translate=False)
+                        self.progress = self.__fix_decompile_rpyc_files_line(fix_console(line))
                 self.progressOrj = "Decompiling rpyc files completed. Removing temp files."
                 self.progress = settings.language.decompilingRpycCompleted
                 self.clear_temp_rpyc_decompilers()

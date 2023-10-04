@@ -189,6 +189,48 @@ class Turkish(LanguageBase):
     
     @classmethod
     @property
+    def searchingForRpycFiles(cls):
+        return "RPYC dosyaları aranıyor..."
+
+    @classmethod
+    def workingIn(cls, folderPath:str):
+        return "\""+folderPath+"\" içerisinde çalışılıyor."
+
+    @classmethod
+    def decompilingRpycTo(cls, rpycFilePath:str, rpyFilePath:str):
+        return "\""+rpycFilePath+"\" dosyası \""+rpyFilePath+"\" olarak çıkartılıyor..."
+
+    @classmethod
+    def decompilingRpycFileSkipped(cls, rpycFilePath:str):
+        return "\""+rpycFilePath+"\" zaten mevcut - atlandı."
+    
+    @classmethod
+    def decompilingRpycError(cls, filePath:str):
+        return "\""+filePath+"\" dosyasını çıkartırken hata:"
+
+    @classmethod
+    def fileNotFound(cls, filePath:str):
+        return "Dosya bulunamadı: \""+filePath+"\""
+
+    @classmethod
+    @property
+    def noScriptFiles(cls):
+        return "Çıkartılacak bir script dosyası yok."
+
+    @classmethod
+    def decompileRpycSuccess(cls, fileCount:str, isMultipleFiles:bool):
+        return fileCount+" dosya başarıyla çıkartıldı."
+
+    @classmethod
+    def decompileRpycFailed(cls, fileCount:str, isMultipleFiles:bool):
+        return fileCount+" dosyanın çıkartılması başarısız."
+
+    @classmethod
+    def decompileRpycSuccessAndFail(cls, successFileCount:str, isSuccessMultipleFiles:bool, failFileCount:str, isFailMultipleFiles:bool, ):
+        return successFileCount+" dosya başarıyla çıkartıldı, fakat "+failFileCount+" dosyanın çıkartılması başarısız!"
+
+    @classmethod
+    @property
     def decompilingRpycCompleted(cls):
         return "Rpyc dosyalarını çıkartma başarılı. Geçici dosyalar siliniyor..."
     

@@ -184,6 +184,48 @@ class LanguageBase(object):
     @property
     def decompilingRpyc(cls):
         return "Decompiling rpyc files..."
+
+    @classmethod
+    @property
+    def searchingForRpycFiles(cls):
+        return "Searching for rpyc files..."
+
+    @classmethod
+    def workingIn(cls, folderPath:str):
+        return "Working in \""+folderPath+"\""
+
+    @classmethod
+    def decompilingRpycTo(cls, rpycFilePath:str, rpyFilePath:str):
+        return "Decompiling \""+rpycFilePath+"\" to \""+rpyFilePath+"\"..."
+
+    @classmethod
+    def decompilingRpycFileSkipped(cls, rpycFilePath:str):
+        return "\""+rpycFilePath+"\" already exists - skipped"
+    
+    @classmethod
+    def decompilingRpycError(cls, filePath:str):
+        return "Error while decompiling \""+filePath+"\":"
+
+    @classmethod
+    def fileNotFound(cls, filePath:str):
+        return "File not found: \""+filePath+"\""
+
+    @classmethod
+    @property
+    def noScriptFiles(cls):
+        return "No script files to decompile."
+
+    @classmethod
+    def decompileRpycSuccess(cls, fileCount:str, isMultipleFiles:bool):
+        return "Decompilation of "+fileCount+" script file%s successful." % ("s" if isMultipleFiles else "")
+
+    @classmethod
+    def decompileRpycFailed(cls, fileCount:str, isMultipleFiles:bool):
+        return "Decompilation of "+fileCount+" file%s failed." % ("s" if isMultipleFiles else "")
+
+    @classmethod
+    def decompileRpycSuccessAndFail(cls, successFileCount:str, isSuccessMultipleFiles:bool, failFileCount:str, isFailMultipleFiles:bool, ):
+        return "Decompilation of "+successFileCount+" file%s successful, but decompilation of "+failFileCount+" file%s failed" % ("s" if isSuccessMultipleFiles else "", "s" if isFailMultipleFiles else "")
     
     @classmethod
     @property
