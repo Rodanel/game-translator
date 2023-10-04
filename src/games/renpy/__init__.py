@@ -164,8 +164,8 @@ class RenpyFrame(object):
         self.__googleTranslateLanguageCombobox__.pack(side="left")
         self.__googleTranslateLanguageCombobox__["state"] = "disabled"
 
-        self.__progressText__ = ScrolledText(self.__frame__, wrap=WORD, state="disabled")
-        self.__progressText__.pack(side="top", fill="both", expand=True)
+        self.__progressText__ = ScrolledText(self.__frame__, wrap=WORD, state="disabled", height=10)
+        self.__progressText__.pack(side="top", fill="x")
         self.__progressOrj__ = ""
         self.__update_props()
         settings.onUpdate(Settings.LANGUAGE, self.update_widget_texts)

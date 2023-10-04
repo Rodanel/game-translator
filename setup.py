@@ -30,7 +30,7 @@ if sys.platform == "win32":
     base = "Win32GUI"
 setup(
     name = 'Game Translator',
-    version = '0.5.4.1',
+    version = '0.5.4.2',
     description = 'An auto game translation tool.',
     author = 'Rodanel',
     options = {'build_exe': {'includes':includes,'excludes':excludes,'packages':packages,'include_files':includefiles}},

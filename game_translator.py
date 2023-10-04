@@ -20,7 +20,7 @@ root = ttk.Window(title="Game Translator by Rodanel", iconphoto=str(MyAssets.ico
 #root.iconbitmap(default=MyAssets.favicon)
 # set size
 window_width = 500
-window_height = 500
+window_height = 300
 
 # get the screen dimension
 screen_width = root.winfo_screenwidth()
@@ -31,9 +31,11 @@ center_x = int(screen_width / 2 - window_width / 2)
 center_y = int(screen_height / 2 - window_height / 2)
 
 # initialize size
-root.geometry(f'{window_width}x{window_height}+{center_x}+{center_y}')
+#root.geometry(f'{window_width}x{window_height}+{center_x}+{center_y}')
+root.geometry(f'+{center_x}+{center_y}')
 root.resizable(False, False)
 root.minsize(window_width, window_height)
+
 
 #Settings
 
