@@ -425,3 +425,37 @@ class LanguageBase(object):
     @classmethod
     def creatingArchiveError(cls, error: str):
         return "Archive could not be created!\n\nError: "+error
+
+    @classmethod
+    @property
+    def optimizeTexts(cls):
+        return "Optimize texts and textbuttons for translation. (Experimental)"
+
+    @classmethod
+    @property
+    def errorTitle(cls):
+        return "Error!"
+
+    @classmethod
+    def optimizeTextsErrorDesc(cls, error: str=None):
+        if error is None:
+            return "Could not optimize texts and text buttons.\n\nSee logs for details."
+        else:
+            return "Could not optimize texts and text buttons.\n\n"+error
+    
+    @classmethod
+    @property
+    def startedOptimizingTexts(cls):
+        return "Started optimizing text and textbuttons."
+    
+    @classmethod
+    def optimizingFile(cls, filePath: str):
+        return "Optimizing text and textbutton in "+filePath
+    
+    @classmethod
+    def optimizedTextAndButtons(cls, count: int):
+        if count == 0:
+            return "No text or textbutton found."
+        else:
+            return str(count)+" string%s optimized." % ("s" if count > 1 else "")
+    

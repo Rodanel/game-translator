@@ -147,6 +147,10 @@ class RenpyFrame(object):
         self.__decompileRpycFilesCheck__.pack(side="top", fill="x", anchor="n")
         self.__decompileRpycFiles__.set(True)
 
+        self.__optimizeTexts__ = ttk.BooleanVar()
+        self.__optimizeTextsCheck__ = ttk.Checkbutton(self.__frame__, style="Roundtoggle.Toolbutton", padding=5, text=settings.language.optimizeTexts, variable=self.__optimizeTexts__, onvalue=True, offvalue=False)
+        self.__optimizeTextsCheck__.pack(side="top", fill="x", anchor="n")
+
         self.__forceRegenerateTranslation__ = ttk.BooleanVar()
         self.__forceRegenerateTranslationCheck__ = ttk.Checkbutton(self.__frame__, style="Roundtoggle.Toolbutton", padding=5, text=settings.language.forceRegenerateTranslation, variable=self.__forceRegenerateTranslation__, onvalue=True, offvalue=False)
         self.__forceRegenerateTranslationCheck__.pack(side="top", fill="x", anchor="n")
@@ -207,6 +211,9 @@ class RenpyFrame(object):
     def decompileRpycFiles(self) -> bool:
         return self.__decompileRpycFiles__.get()
     @property
+    def optimizeTexts(self)-> bool:
+        return self.__optimizeTexts__.get()
+    @property
     def forceRegenerateTranslation(self) -> bool:
         return self.__forceRegenerateTranslation__.get()
     @property
@@ -256,6 +263,7 @@ class RenpyFrame(object):
         self.__ignoredRpaFilesRemoveButton__["text"] = settings.language.remove
         self.__ignoredRpaFilesAddButton__["text"] = settings.language.add
         self.__decompileRpycFilesCheck__["text"] = settings.language.decompileRPYCFiles
+        self.__optimizeTextsCheck__["text"] = settings.language.optimizeTexts
         self.__forceRegenerateTranslationCheck__["text"] = settings.language.forceRegenerateTranslation
         self.__translateWithGoogleTranslateCheck__["text"] = settings.language.translateWithGoogle
         self.__googleTranslateLanguageLabel__["text"] = settings.language.translateToDot
@@ -310,6 +318,8 @@ class RenpyFrame(object):
         return _files
     def __save_decompileRpycFiles(self, *args):
         self.__save_setting(Settings.DECOMPİLE_RPYC, self.__decompileRpycFiles__)
+    def __save_optimizeTexts(self, *args):
+        self.__save_setting(Settings.OPTIMIZE_TEXTS, self.__optimizeTexts__)
     def __save_forceRegenerateTranslation(self, *args):
         self.__save_setting(Settings.FORCE_REGENERATE_TRANSLATION_FILES, self.__forceRegenerateTranslation__)
     def __save_translateWithGoogleTranslate(self, *args):
@@ -333,6 +343,7 @@ class RenpyFrame(object):
         self.__extractRpaArchivesCheck__["state"] = "disabled" if disabled else "normal"
         self.__update_ignoreRpafilesState(disabled)
         self.__decompileRpycFilesCheck__["state"] = "disabled" if disabled else "normal"
+        self.__optimizeTextsCheck__["state"] = "disabled" if disabled else "normal"
         self.__forceRegenerateTranslationCheck__["state"] = "disabled" if disabled else "normal"
         self.__translateWithGoogleTranslateCheck__["state"] = "disabled" if disabled else "normal"
         self.__update_googleTranslateLanguageState(disabled)
@@ -366,6 +377,9 @@ class RenpyFrame(object):
 
         self.__restore_setting(Settings.DECOMPİLE_RPYC, self.__decompileRpycFiles__)
         self.__decompileRpycFiles__.trace_add("write", self.__save_decompileRpycFiles)
+
+        self.__restore_setting(Settings.OPTIMIZE_TEXTS, self.__optimizeTexts__)
+        self.__optimizeTexts__.trace_add("write", self.__save_optimizeTexts)
 
         self.__restore_setting(Settings.FORCE_REGENERATE_TRANSLATION_FILES, self.__forceRegenerateTranslation__)
         self.__forceRegenerateTranslation__.trace_add("write", self.__save_forceRegenerateTranslation)
@@ -564,6 +578,53 @@ class RenpyFrame(object):
             self.progress = settings.language.decompilingRpycSkipped
         return True
     
+    def __optimize_texts(self):
+        if self.cancelled:
+            return True
+        if self.optimizeTexts:
+            try:
+                self.progressOrj = "Started optimizing text and textbuttons."
+                self.progress = settings.language.startedOptimizingTexts
+                exclude = set(["tl"])
+                for _path, _subdirs, _files in walk(self.gamedir, topdown=True):
+                    if self.cancelled:
+                        return True
+                    _subdirs[:] = [d for d in _subdirs if d not in exclude]
+                    for _name in _files:
+                        if self.cancelled:
+                            return True
+                        if _name.endswith(".rpy"):
+                            reallocation = path.join(_path, _name)
+                            self.progressOrj = "Optimizing \""+reallocation+"\""
+                            self.progress = settings.language.optimizingFile(filePath=reallocation)
+                            with open(reallocation, "r") as rpyFile:
+                                rpyText = str(rpyFile.read())
+                            rpyFile.closed
+                            p = re.compile(r'text "([^"]*)"')
+                            result = p.findall(rpyText)
+                            p2 = re.compile(r'textbutton "([^"]*)"')
+                            result2 = p2.findall(rpyText)
+                            result.extend(result2)
+                            for res in result:
+                                rpyText = rpyText.replace("text \""+res+"\"","text _(\""+res+"\")").replace("textbutton \""+res+"\"","textbutton _(\""+res+"\")")
+                            if len(result) > 0:
+                                with open(reallocation, "w") as rpyFile2:
+                                    rpyFile2.write(rpyText)
+                                rpyFile2.closed
+                            if len(result) == 0:
+                                self.progressOrj = "No text or textbutton found."
+                            else:
+                                self.progressOrj = str(len(result))+" string%s optimized." % ("s" if len(result) > 1 else "")
+                            self.progress = settings.language.optimizedTextAndButtons(count=len(result))
+            except:         
+                error_text = traceback.format_exc()
+                print(error_text)
+                self.progressOrj = "Could not optimize texts and text buttons.\n\nCheck errors above."
+                self.progress = settings.language.optimizeTextsErrorDesc(error_text)
+                messagebox.showerror(settings.language.errorTitle, message=settings.language.optimizeTextsErrorDesc())
+                return False
+        return True
+
     def __generate_translation_files(self):
         if self.cancelled:
             return True
@@ -781,11 +842,14 @@ class RenpyFrame(object):
                     generated_translation_files = False
                     if self.__extract_rpa_archives():
                         if self.__decompile_rpyc_files():
-                            if self.__generate_translation_files():
-                                generated_translation_files = True
-                                if self.__google_translate():
-                                    if self.__generate_translation_lock_file():
-                                        pass
+                            if self.__optimize_texts():
+                                if self.__generate_translation_files():
+                                    generated_translation_files = True
+                                    if self.__google_translate():
+                                        if self.__generate_translation_lock_file():
+                                            pass
+                                        else:
+                                            error_occurred = True
                                     else:
                                         error_occurred = True
                                 else:

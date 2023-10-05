@@ -432,4 +432,37 @@ class Turkish(LanguageBase):
             return "Arşiv dosyası oluşturulamadı!\n\nDetaylar için logları kontrol edin."
         else:
            return "Arşiv dosyası oluşturulamadı!\n\n"+error
-        
+    
+    @classmethod
+    @property
+    def optimizeTexts(cls):
+        return "Yazıları ve butonları çeviri için uygun hale getir. (Deneysel)"
+
+    @classmethod
+    @property
+    def errorTitle(cls):
+        return "Hata!"
+
+    @classmethod
+    def optimizeTextsErrorDesc(cls, error: str=None):
+        if error is None:
+            return "Yazılar ve butonları uygun hale getirilemedi.\n\nDetaylar için logları kontrol edin."
+        else:
+            return "Yazılar ve butonları uygun hale getirilemedi.\n\n"+error
+    
+    @classmethod
+    @property
+    def startedOptimizingTexts(cls):
+        return "Yazılar ve butonları uygun hale getirme başladı."
+    
+    @classmethod
+    def optimizingFile(cls, filePath: str):
+        return "\""+filePath+"\" içerisindeki yazılar ve butonlar uygun hale getiriliyor."
+    
+    
+    @classmethod
+    def optimizedTextAndButtons(cls, count: int):
+        if count == 0:
+            return "Yazı veya buton bulunamadı."
+        else:
+            return str(count)+" yazı ve buton optimize edildi."

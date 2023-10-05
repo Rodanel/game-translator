@@ -17,6 +17,7 @@ class Settings(object):
     EXTRACT_RPA = "extractRpaFiles"
     IGNORED_RPA_FILES = "ignoredRPAFiles"
     DECOMPİLE_RPYC = "decompileRpycFiles"
+    OPTIMIZE_TEXTS = "optimizeTexts"
     FORCE_REGENERATE_TRANSLATION_FILES = "forceRegenerateTranslationFiles"
     TRANSLATE_WITH_GOOGLE_TRANSLATE = "translateWithGoogleTranslate"
     GOOGLE_TRANSLATE_LANGUAGE_CODE = "googleTranslateLanguageCode"
@@ -33,6 +34,7 @@ class Settings(object):
                 Settings.EXTRACT_RPA: True,
                 Settings.IGNORED_RPA_FILES: [],
                 Settings.DECOMPİLE_RPYC: True,
+                Settings.OPTIMIZE_TEXTS: False,
                 Settings.FORCE_REGENERATE_TRANSLATION_FILES: False,
                 Settings.TRANSLATE_WITH_GOOGLE_TRANSLATE: False,
                 Settings.GOOGLE_TRANSLATE_LANGUAGE_CODE: "",
