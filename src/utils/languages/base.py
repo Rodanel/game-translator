@@ -1,4 +1,11 @@
+from typing import TypeVar, Type
+T = TypeVar('T', bound='LanguageBase')
 class LanguageBase(object):
+
+    @classmethod
+    @property
+    def base(cls: Type[T]) -> T:
+        return cls
 
     @classmethod
     @property
@@ -177,11 +184,6 @@ class LanguageBase(object):
 
     @classmethod
     @property
-    def extractRPASkipped(cls):
-        return "Extracting rpa archives skipped."
-
-    @classmethod
-    @property
     def decompilingRpyc(cls):
         return "Decompiling rpyc files..."
 
@@ -248,11 +250,6 @@ class LanguageBase(object):
             return "Could not decompile rpyc files.\n\nSee logs for details."
         else:
             return "Could not decompile rpyc files.\n\n"+error
-    
-    @classmethod
-    @property
-    def decompilingRpycSkipped(cls):
-        return "Decompiling rpyc files skipped."
 
     @classmethod
     @property
@@ -276,18 +273,15 @@ class LanguageBase(object):
 
     @classmethod
     @property
-    def generatingTranslationErrorLog(cls):
-        return "Could not create translation files.\n\nCheck errors above." # Shows on log file
-
-    @classmethod
-    @property
-    def generatingTranslationErrorMSGTitle(cls):
+    def generatingTranslationErrorTitle(cls):
         return "Could not create translation"
 
     @classmethod
-    @property
-    def generatingTranslationErrorMSG(cls):
-        return "Could not create translation files.\n\nCheck errors in log file." # Shows on messagebox
+    def generatingTranslationError(cls, error: str=None):
+        if error is None:
+            return "Could not create translation files.\n\nSee logs for details."
+        else:
+            return "Could not create translation files.\n\n"+error
     
     @classmethod
     def translating(cls, filePath: str):

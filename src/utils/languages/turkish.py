@@ -4,6 +4,11 @@ class Turkish(LanguageBase):
     
     @classmethod
     @property
+    def base(cls) -> LanguageBase:
+        return LanguageBase
+
+    @classmethod
+    @property
     def browseLabel(cls):
         return "Oyun seçmek için \""+LanguageBase.browseButton+"\" butonuna tıklayın"
 
@@ -179,11 +184,6 @@ class Turkish(LanguageBase):
 
     @classmethod
     @property
-    def extractRPASkipped(cls):
-        return "RPA arşivlerini çıkarma atlandı."
-
-    @classmethod
-    @property
     def decompilingRpyc(cls):
         return "Rpyc dosyaları çıkartılıyor..."
     
@@ -254,11 +254,6 @@ class Turkish(LanguageBase):
 
     @classmethod
     @property
-    def decompilingRpycSkipped(cls):
-        return "Rpyc dosyalarını çıkartma atlandı."
-
-    @classmethod
-    @property
     def translationSkipped(cls):
         return "Çeviri dosyalarını oluşturma atlandı, çünkü çeviri klasörü zaten mevcut ve tekrar oluşturmaya zorla seçeneği devredışı."
 
@@ -279,18 +274,15 @@ class Turkish(LanguageBase):
 
     @classmethod
     @property
-    def generatingTranslationErrorLog(cls):
-        return "Çeviri dosyaları oluşturulamadı.\n\nYukarıdaki hataları kontrol edin." # Shows on log file
-
-    @classmethod
-    @property
-    def generatingTranslationErrorMSGTitle(cls):
+    def generatingTranslationErrorTitle(cls):
         return "Could not create translation"
 
     @classmethod
-    @property
-    def generatingTranslationErrorMSG(cls):
-        return "Çeviri dosyaları oluşturulamadı.\n\nLog dosyasındaki hataları kontrol edin." # Shows on messagebox
+    def generatingTranslationError(cls, error: str=None):
+        if error is None:
+            return "Çeviri dosyaları oluşturulamadı.\n\nDetaylar için logları kontrol edin."
+        else:
+            return "Çeviri dosyaları oluşturulamadı.\n\n"+error
     
     @classmethod
     def translating(cls, filePath: str):
@@ -298,7 +290,7 @@ class Turkish(LanguageBase):
 
     @classmethod
     def translatingSkipped(cls, filePath: str):
-        return "\""+filePath+"\ dosyasının çevirisi atlandı skipped. Dosya zaten çevrilmiş!"
+        return "\""+filePath+"\ dosyasının çevirisi atlandı. Dosya zaten çevrilmiş!"
     
     @classmethod
     @property

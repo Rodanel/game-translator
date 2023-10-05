@@ -454,98 +454,83 @@ class RenpyFrame(object):
                 if fname.endswith(".rpa"):
                     if path.basename(fname) not in _ignoredFiles:
                         try:
-                            self.progressOrj = "Extracting "+fname+"..."
+                            self.progressOrj = settings.language.base.exrtractingFile(fileName=fname)
                             self.progress = settings.language.exrtractingFile(fileName=fname)
                             print("Exracting "+fname+"...")
                             self.__rpaeditor__ = RpaEditor(fullpath, _extract=True, _version=2)
                             self.__rpaeditor__.start()
                             if self.cancelled:
                                 return True
-                            self.progressOrj = "Extracted "+fname+" successfully!"
+                            self.progressOrj = settings.language.base.exrtractedFileSuccess(fileName=fname)
                             self.progress = settings.language.exrtractedFileSuccess(fileName=fname)
                         except:
                             error_text = traceback.format_exc()
                             print(error_text)
-                            self.progressOrj = "Could not extract \""+fname+"\" archive.\n\n"+error_text
+                            self.progressOrj = settings.language.base.extractFileError(filePath=fname, error=error_text)
                             self.progress = settings.language.extractFileError(filePath=fname, error=error_text)
                             messagebox.showerror(settings.language.extractFileErrorTitle, message=settings.language.extractFileError(filePath=fname))               
                             return False
                     else:
-                        self.progressOrj = "Ignored "+fname+"..."
+                        self.progressOrj = settings.language.base.ignoredFileWarning(fileName=fname)
                         self.progress = settings.language.ignoredFileWarning(fileName=fname) 
-        else:
-            self.progressOrj = "Extracting rpa archives skipped."
-            self.progress = settings.language.extractRPASkipped
         return True
+
     def __fix_decompile_rpyc_files_line(self, text, translate:bool=True):
-        
+        _lang = settings.language
+        if not translate:
+            _lang = settings.language.base
         if text == "No script files to decompile.":
-            if translate:
-                return settings.language.noScriptFiles
+            return _lang.noScriptFiles
         elif text == "Searching for rpyc files...":
-            if translate:
-                return settings.language.searchingForRpycFiles
+            return _lang.searchingForRpycFiles
         else:
             p1 = re.compile('Decompiling (.*) to (.*)...')
             result1 = p1.search(text)
             if result1 is not None:
-                if translate:
-                    return settings.language.decompilingRpycTo(rpycFilePath=result1.group(1), rpyFilePath=result1.group(2))
-                else:
-                    return "Decompiling \""+result1.group(1)+"\" to \""+result1.group(2)+"\"..."
+                return _lang.decompilingRpycTo(rpycFilePath=result1.group(1), rpyFilePath=result1.group(2))
             else:
                 p2 = re.compile('Error while decompiling (.*):',)
                 result2 = p2.search(text)
                 if result2 is not None:
-                    if translate:
-                        return settings.language.decompilingRpycError(filePath=result2.group(1))
-                    else:
-                        return "Error while decompiling \""+result2.group(1)+"\":"
+                    return _lang.decompilingRpycError(filePath=result2.group(1))
                 else:
                     p3 = re.compile('File not found: (.*)')
                     result3 = p3.search(text)
                     if result3 is not None:
-                        if translate:
-                            settings.language.fileNotFound(filePath=result3.group(1))
-                        else:
-                            return "File not found: \""+result3.group(1)+"\""
+                        return _lang.fileNotFound(filePath=result3.group(1))
                     else:
                         p4 = re.compile('Decompilation of (.*) script file(.*)successful')
                         result4 = p4.search(text)
                         if result4 is not None:
-                            if translate:
-                                return settings.language.decompileRpycSuccess(fileCount=result4.group(1), isMultipleFiles=True if result4.group(2) == "s " else False)
+                            return _lang.decompileRpycSuccess(fileCount=result4.group(1), isMultipleFiles=True if result4.group(2) == "s " else False)
                         else:
                             p5 = re.compile('Decompilation of (.*) file(.*)failed')
                             result5 = p5.search(text)
                             if result5 is not None:
-                                if translate:
-                                    return settings.language.decompileRpycFailed(fileCount=result5.group(1), isMultipleFiles=True if result5.group(2) == "s " else False)
+                                return _lang.decompileRpycFailed(fileCount=result5.group(1), isMultipleFiles=True if result5.group(2) == "s " else False)
                             else:
                                 p6 = re.compile('Decompilation of (.*) file(.*)successful, but decompilation of (.*) file(.*)failed')
                                 result6 = p6.search(text)
                                 if result6 is not None:
-                                    if translate:
-                                        return settings.language.decompileRpycSuccessAndFail(successFileCount=result6.group(1), isSuccessMultipleFiles=True if result6.group(2) == "s " else False,failFileCount=result6.group(3),  isFailMultipleFiles=True if result6.group(4) == "s " else False)
+                                    return _lang.decompileRpycSuccessAndFail(successFileCount=result6.group(1), isSuccessMultipleFiles=True if result6.group(2) == "s " else False,failFileCount=result6.group(3),  isFailMultipleFiles=True if result6.group(4) == "s " else False)
                                 else:
                                     p7 = re.compile('(.*) already exists - skipped')
                                     result7 = p7.search(text)
                                     if result7 is not None:
                                         if translate:
-                                            return settings.language.decompilingRpycFileSkipped(rpycFilePath=result7.group(1))
+                                            return _lang.decompilingRpycFileSkipped(rpycFilePath=result7.group(1))
                                     else:
                                         p8 = re.compile('Working in: (.*)')
                                         result8 = p8.search(text)
                                         if result8 is not None:
-                                            if translate:
-                                                return settings.language.workingIn(folderPath=result8.group(1))
+                                            return _lang.workingIn(folderPath=result8.group(1))
         return text
     def __decompile_rpyc_files(self):
         if self.cancelled:
             return True
         if self.decompileRpycFiles:
             try:
-                self.progressOrj = "Starting decompiling rpyc files..."
+                self.progressOrj = settings.language.base.decompilingRpyc
                 self.progress = settings.language.decompilingRpyc
                 unren_bat_file = open(self.unrenfile, "x")
                 unren_bat_file.write(unren_content)
@@ -560,22 +545,19 @@ class RenpyFrame(object):
                     else:
                         self.progressOrj = self.__fix_decompile_rpyc_files_line(fix_console(line), translate=False)
                         self.progress = self.__fix_decompile_rpyc_files_line(fix_console(line))
-                self.progressOrj = "Decompiling rpyc files completed. Removing temp files."
+                self.progressOrj = settings.language.base.decompilingRpycCompleted
                 self.progress = settings.language.decompilingRpycCompleted
                 self.clear_temp_rpyc_decompilers()
                 time.sleep(3)
-                self.progressOrj = "Temp files removed successfully!"
+                self.progressOrj = settings.language.base.removedTmpFiles
                 self.progress = settings.language.removedTmpFiles
             except:
                 error_text = traceback.format_exc()
                 print(error_text)
-                self.progressOrj = "Could not decompile rpyc files.\n\n"+error_text
+                self.progressOrj = settings.language.base.decompileRpycError(error=error_text)
                 self.progress = settings.language.decompileRpycError(error=error_text)
                 messagebox.showerror(settings.language.decompileRpycErrorTitle, message=settings.language.decompileRpycError())
                 return False
-        else:
-            self.progressOrj = "Decompiling rpyc files skipped."
-            self.progress = settings.language.decompilingRpycSkipped
         return True
     
     def __optimize_texts(self):
@@ -583,7 +565,7 @@ class RenpyFrame(object):
             return True
         if self.optimizeTexts:
             try:
-                self.progressOrj = "Started optimizing text and textbuttons."
+                self.progressOrj = settings.language.base.startedOptimizingTexts
                 self.progress = settings.language.startedOptimizingTexts
                 exclude = set(["tl"])
                 for _path, _subdirs, _files in walk(self.gamedir, topdown=True):
@@ -595,7 +577,7 @@ class RenpyFrame(object):
                             return True
                         if _name.endswith(".rpy"):
                             reallocation = path.join(_path, _name)
-                            self.progressOrj = "Optimizing \""+reallocation+"\""
+                            self.progressOrj = settings.language.base.optimizingFile(filePath=reallocation)
                             self.progress = settings.language.optimizingFile(filePath=reallocation)
                             with open(reallocation, "r") as rpyFile:
                                 rpyText = str(rpyFile.read())
@@ -611,15 +593,12 @@ class RenpyFrame(object):
                                 with open(reallocation, "w") as rpyFile2:
                                     rpyFile2.write(rpyText)
                                 rpyFile2.closed
-                            if len(result) == 0:
-                                self.progressOrj = "No text or textbutton found."
-                            else:
-                                self.progressOrj = str(len(result))+" string%s optimized." % ("s" if len(result) > 1 else "")
+                            self.progressOrj = settings.language.base.optimizedTextAndButtons(count=len(result))
                             self.progress = settings.language.optimizedTextAndButtons(count=len(result))
             except:         
                 error_text = traceback.format_exc()
                 print(error_text)
-                self.progressOrj = "Could not optimize texts and text buttons.\n\nCheck errors above."
+                self.progressOrj = settings.language.base.optimizeTextsErrorDesc(error_text)
                 self.progress = settings.language.optimizeTextsErrorDesc(error_text)
                 messagebox.showerror(settings.language.errorTitle, message=settings.language.optimizeTextsErrorDesc())
                 return False
@@ -630,14 +609,14 @@ class RenpyFrame(object):
             return True
         try:
             if path.exists(self.tlfilesdir) and not self.forceRegenerateTranslation:
-                self.progressOrj = "Generation of translation files skipped, because translation folder already exists and force regenerate is disabled."
+                self.progressOrj = settings.language.base.translationSkipped
                 self.progress = settings.language.translationSkipped
             else:
                 if path.exists(self.tlfilesdir) and self.forceRegenerateTranslation:
-                    self.progressOrj = "Regenerating translation files..."
+                    self.progressOrj = settings.language.base.regeneratingTranslation
                     self.progress = settings.language.regeneratingTranslation
                 else:
-                    self.progressOrj = "Generating translation files..."
+                    self.progressOrj = settings.language.base.generatingTranslation
                     self.progress = settings.language.generatingTranslation
                 executable_path = path.dirname(fsdecode(self.filename))
                 game_extension = ".exe" if self.filename.endswith(".exe") else ""
@@ -687,14 +666,15 @@ class RenpyFrame(object):
                 if generate_error_occurred:
                     raise Exception("")
                 else:
-                    self.progressOrj = "Generated translation files successfully."
+                    self.progressOrj = settings.language.base.generatedTranslation
                     self.progress = settings.language.generatedTranslation
                     return True
         except:
-            print(traceback.format_exc())
-            self.progressOrj = "Could not create translation files.\n\nCheck errors above."
-            self.progress = settings.language.generatingTranslationErrorLog
-            messagebox.showerror(settings.language.generatingTranslationErrorMSGTitle, message=settings.language.generatingTranslationErrorMSG)
+            error_text = traceback.format_exc()
+            print(error_text)
+            self.progressOrj = settings.language.base.generatingTranslationError(error=error_text)
+            self.progress = settings.language.generatingTranslationError(error=error_text)
+            messagebox.showerror(settings.language.generatingTranslationErrorTitle, message=settings.language.generatingTranslationError())
             return False
         return True
     def __google_translate(self):
@@ -712,12 +692,12 @@ class RenpyFrame(object):
                                 return True
                             reallocation = path.join(_path, _name)
                             if path.isfile(reallocation) and reallocation.endswith(".rpy"):
-                                self.progressOrj = "Translating \""+reallocation+"\"..."
+                                self.progressOrj = settings.language.base.translating(filePath=reallocation)
                                 self.progress = settings.language.translating(filePath=reallocation)
                                 with open(reallocation, "r+") as tlfile:
                                     file_lines = tlfile.readlines()
                                     if file_lines[len(file_lines)-1].strip().startswith(translated_comment):
-                                        self.progressOrj = "Translation of \""+reallocation+"\" skipped. Because it's already translated!" 
+                                        self.progressOrj = settings.language.base.translatingSkipped(filePath=reallocation)
                                         self.progress = settings.language.translatingSkipped(filePath=reallocation)
                                     else:
                                         translatable_texts = {}
@@ -748,13 +728,13 @@ class RenpyFrame(object):
                                                     translatable_texts[file_line_i]["text"] = translate_text
                                                     translatable_texts[file_line_i]["map"] = variable_map
                                         if len(translatable_texts.keys()) > 0:
-                                            self.progressOrj = "Connecting with google translate..."
+                                            self.progressOrj = settings.language.base.connectingGoogleTrans
                                             self.progress = settings.language.connectingGoogleTrans
                                             start_time = time.time()
                                             translated = translator.translate([value["text"] for key,value in translatable_texts.items()], dest=googletrans.LANGCODES[self.googleTranslateLanguage.lower()])
                                             end_time = time.time()
                                             total_seconds = int(end_time - start_time)
-                                            self.progressOrj = "Strings translated in "+str(total_seconds)+ " seconds!"
+                                            self.progressOrj = settings.language.base.stringsTranslated(seconds=total_seconds)
                                             self.progress = settings.language.stringsTranslated(seconds=total_seconds)
                                             for tr_i in range(len(translated)):
                                                 if self.cancelled:
@@ -769,20 +749,20 @@ class RenpyFrame(object):
                                             with open(reallocation, "w") as tlfile2:
                                                 tlfile2.write("".join(file_lines)+"\n"+translated_comment)
                                             tlfile2.closed
-                                            self.progressOrj = "Translation of \""+reallocation+"\" successfull!"
+                                            self.progressOrj = settings.language.base.translatingFileSuccess(filePath=reallocation)
                                             self.progress = settings.language.translatingFileSuccess(filePath=reallocation)
                                 tlfile.closed
                                     
-                    self.progressOrj = "Translation completed! Please launch the game and check if has any error."
+                    self.progressOrj = settings.language.base.translatingSuccess
                     self.progress = settings.language.translatingSuccess
                 else:
-                    self.progressOrj =  "Translation folder \""+self.tlfilesdir+"\" not found!"
+                    self.progressOrj =  settings.language.base.translationFolderNotFound(folderPath=self.tlfilesdir)
                     self.progress = settings.language.translationFolderNotFound(folderPath=self.tlfilesdir)
                     return False
         except:
             error_text = traceback.format_exc()
             print(error_text)
-            self.progressOrj = "Translation failed!\n\n"+error_text
+            self.progressOrj = settings.language.base.translationFailed(error=error_text)
             self.progress = settings.language.translationFailed(error=error_text)
             messagebox.showerror(settings.language.translationFailedTitle, message=settings.language.translationFailed()) 
             return False
@@ -792,9 +772,9 @@ class RenpyFrame(object):
             return True
         if self.lockLocalization:
             try:
-                self.progressOrj = "Language locking to "+self.languageName+" ("+self.languageFolderName+")..."
+                self.progressOrj = settings.language.base.lockingTranslation(languageName=self.languageName, languageFolderName=self.languageFolderName)
                 self.progress = settings.language.lockingTranslation(languageName=self.languageName, languageFolderName=self.languageFolderName)
-                self.progressOrj = "Looking for existed lock file."
+                self.progressOrj = settings.language.base.lookingExistedLockFile
                 self.progress = settings.language.lookingExistedLockFile
                 lockfilefound = None
                 for foundlockfile in listdir(self.gamedir):
@@ -813,10 +793,10 @@ class RenpyFrame(object):
                             lockfilefound = lockfilerealLocation
                             break
                 if lockfilefound is not None:
-                    self.progressOrj = "Lock file found in \""+lockfilerealLocation+"\" and removed.\nCreating new one..."
+                    self.progressOrj = settings.language.base.lockFileFoundLoc(filePath=lockfilerealLocation)
                     self.progress = settings.language.lockFileFoundLoc(filePath=lockfilerealLocation)
                 else:
-                    self.progressOrj = "Lock file not found, creating one..."
+                    self.progressOrj = settings.language.base.lockFileNotFound
                     self.progress = settings.language.lockFileNotFound
                 if self.cancelled:
                     return True
@@ -824,12 +804,12 @@ class RenpyFrame(object):
                 lock_tl_file = open(locktlfile, "x")
                 lock_tl_file.write(self.commentline+"\ninit python:\n    config.language = \""+self.languageFolderName+"\"")
                 lock_tl_file.close()
-                self.progressOrj = "Language locked to "+self.languageName+" ("+self.languageFolderName+"). For unlocking just delete \""+locktlfile+"\" file."
+                self.progressOrj = settings.language.base.lockFileCreated(languageName=self.languageName, languageFolderName=self.languageFolderName, lockFileName=locktlfile)
                 self.progress = settings.language.lockFileCreated(languageName=self.languageName, languageFolderName=self.languageFolderName, lockFileName=locktlfile)
             except:
                 error_text = traceback.format_exc()
                 print(error_text)
-                self.progressOrj = "Could not create translation lock file.\n\n"+error_text
+                self.progressOrj = settings.language.base.lockFileFailed(error=error_text)
                 self.progress = settings.language.lockFileFailed(error=error_text)
                 messagebox.showerror(settings.language.lockFileFailedTitle, message=settings.language.lockFileFailed()) 
                 return False
@@ -866,7 +846,7 @@ class RenpyFrame(object):
                     else:
                         error_occurred = True
                     if self.cancelled:
-                        self.progressOrj = "Translation cancelled by user!"
+                        self.progressOrj = settings.language.base.translationCancelledByUser
                         self.progress = settings.language.translationCancelledByUser
                     #self.stop_loading()
                     self.clear_temp_rpyc_decompilers()
@@ -933,7 +913,7 @@ class RenpyFrame(object):
             gname = path.splitext(bname)[0]
             archivepath = self.get_zip_name(self.dirname, gname)
             dname = path.dirname(archivepath)
-            self.progressOrj = "Started generating a zip archive in \""+archivepath+"\"..."
+            self.progressOrj = settings.language.base.zipStarted(arhivePath=archivepath)
             self.progress = settings.language.zipStarted(arhivePath=archivepath)
             if not path.isdir(dname):
                 mkdir(dname)
@@ -944,15 +924,15 @@ class RenpyFrame(object):
                     fn = path.join(base, file)
                     if fn.endswith(".rpy") or fn.endswith(".rpyc") or fn.startswith(self.tldir):
                         zipobj.write(fn, path.join("game", fn[rootlen:]))
-                        self.progressOrj = "Added \""+fn+"\" file to archive."
+                        self.progressOrj = settings.language.base.addedFileToArchive(filePath=fn)
                         self.progress = settings.language.addedFileToArchive(filePath=fn)
             self.progressOrj = ""
-            self.progressOrj = "Creating archive completed!"
+            self.progressOrj = settings.language.base.createdArchiveSuccess(archivePath=archivepath)
             self.progress = settings.language.createdArchiveSuccess(archivePath=archivepath)
         except:
             error_text = traceback.format_exc()
             print(error_text)
-            self.progressOrj = "Archive could not be created!\n\n"+error_text
+            self.progressOrj = settings.language.base.creatingArchiveError(error=error_text)
             self.progress = settings.language.creatingArchiveError(error=error_text)
             messagebox.showerror(settings.language.creatingArchiveErrorTitle, message=settings.language.creatingArchiveError())
             self.save_progress()

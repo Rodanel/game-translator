@@ -10,18 +10,40 @@
 
 - Create a file to: {project-path}/src/utils/languages/{your_language}.py
 - Copy content of {project-path}/src/utils/languages/base.py and paste in the file you previously created.
-- Replace this line in that file:
+
+- Replace this in your language file.
 
 ```
-class LanguageBase(object):
+from typing import TypeVar, Type # You can remove this line
+T = TypeVar('T', bound='LanguageBase') # You can remove this line
+
+from src.utils.languages.base import LanguageBase # Add this line
+
+class LanguageBase(object): # Replace to: class YourLanguage(LanguageBase):
+
+    # IMPORTANT: "base" variable should return LanguageBase class. If you don't change it, It will be return itself.
+    #            It's important for logging in english.
+    @classmethod
+    @property
+    def base(cls: Type[T]) -> T:    # Replace to: def base(cls) -> LanguageBase:
+        return cls                  # Replace to: return LanguageBase 
+    ...
 ```
 
-- With this
+- Example Language File:
+
 ```
 from src.utils.languages.base import LanguageBase
 
-class YourLanguage(LanguageBase):
+class French(LanguageBase):
+    
+    @classmethod
+    @property
+    def base(cls) -> LanguageBase:
+        return LanguageBase
+    ...
 ```
+
 
 - And add your language and conditions in {project-path}/src/utils/languages/enum.py
 - Example:
