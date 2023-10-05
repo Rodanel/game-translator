@@ -713,14 +713,16 @@ class RenpyFrame(object):
                                                 if result is not None:
                                                     translate_text = result.group(1)
                                                     variable_map = {}
+                                                    no_translate_start = "<span class=\"notranslate\">"
+                                                    no_translate_end = "</span>"
                                                     square_brackets = re.findall(r'\[.+?\]', translate_text)
                                                     for i in range(len(square_brackets)):
-                                                        replaced_variable = " __["+str(i)+"]__ "
+                                                        replaced_variable = no_translate_start+"["+str(i)+"]"+no_translate_end
                                                         variable_map[replaced_variable] = square_brackets[i]
                                                         translate_text = translate_text.replace(square_brackets[i], replaced_variable)
                                                     curly_brackets = re.findall(r'\{.+?\}', translate_text)
                                                     for i in range(len(curly_brackets)):
-                                                        replaced_variable = " __{"+str(i)+"}__ "
+                                                        replaced_variable = no_translate_start+"{"+str(i)+"}"+no_translate_end
                                                         variable_map[replaced_variable] = curly_brackets[i]
                                                         translate_text = translate_text.replace(curly_brackets[i], replaced_variable)
                                                     translatable_texts[file_line_i] = {}
@@ -744,7 +746,7 @@ class RenpyFrame(object):
                                                 original_value = list(translatable_texts.values())[tr_i]
                                                 translated_text = translated[tr_i].text
                                                 for key, value in original_value["map"].items():
-                                                    translated_text = translated_text.replace(key, value).replace(key.strip(), value)
+                                                    translated_text = translated_text.replace(key, value)
                                                 file_lines[original_index] = file_lines[original_index].replace(original_value["original"], translated_text.replace("\"", "\\\"").replace("\\\\\"","\\\"").replace("\n", "\\n"))
                                             with open(reallocation, "w") as tlfile2:
                                                 tlfile2.write("".join(file_lines)+"\n"+translated_comment)
