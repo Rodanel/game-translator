@@ -589,6 +589,8 @@ class RenpyFrame(object):
                             result.extend(result2)
                             for res in result:
                                 rpyText = rpyText.replace("text \""+res+"\"","text _(\""+res+"\")").replace("textbutton \""+res+"\"","textbutton _(\""+res+"\")")
+                            if self.cancelled:
+                                return True
                             if len(result) > 0:
                                 with open(reallocation, "w") as rpyFile2:
                                     rpyFile2.write(rpyText)
