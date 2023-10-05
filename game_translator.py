@@ -152,26 +152,6 @@ startButton.pack(side=BOTTOM, fill=X)
 
 startButton["state"] = "disabled"
 
-
-import re
-def test_cmd():
-    translate_text = '{color="asdasd"}asdasd{/color}'
-    curly_brackets = re.findall(r'\{.+?\}', translate_text)
-    curly_brackets_end = re.findall(r'\{\/.+?\}', translate_text)
-    variable_map = {}
-    for i in range(len(curly_brackets_end)):
-        replaced_variable = " __{/"+str(i)+"}__ "
-        variable_map[replaced_variable] = curly_brackets_end[i]
-        translate_text = translate_text.replace(curly_brackets_end[i], replaced_variable)
-    for i in range(len(curly_brackets)):
-        replaced_variable = " __{"+str(i)+"}__ "
-        variable_map[replaced_variable] = curly_brackets[i]
-        translate_text = translate_text.replace(curly_brackets[i], replaced_variable)
-    print(translate_text.replace("_",""))
-    print(variable_map)
-testButton = ttk.Button(root, text="Test", bootstyle=SUCCESS, command=lambda:test_cmd())
-testButton.pack(side=BOTTOM, fill=X)
-
 def updateButtons():
     browseButton["text"] = settings.language.browseButton
     startButton["text"] = settings.language.startButton
