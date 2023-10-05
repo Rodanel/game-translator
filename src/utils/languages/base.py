@@ -423,7 +423,7 @@ class LanguageBase(object):
     @classmethod
     @property
     def optimizeTexts(cls):
-        return "Optimize texts and textbuttons for translation. (Experimental)"
+        return "Optimize texts and textbuttons for translation."
 
     @classmethod
     @property

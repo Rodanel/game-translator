@@ -428,7 +428,7 @@ class Turkish(LanguageBase):
     @classmethod
     @property
     def optimizeTexts(cls):
-        return "Yazıları ve butonları çeviri için uygun hale getir. (Deneysel)"
+        return "Yazıları ve butonları çeviri için uygun hale getir."
 
     @classmethod
     @property
