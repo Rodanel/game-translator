@@ -9,6 +9,23 @@ includefiles = [
     (MyAssets.icon, MyAssets.icon),
 ]
 
+localeFiles = ["en", "tr"]
+
+# Add your locale here
+# localeFiles.append("your_locale_file_name")
+#
+# Your locale file should be inside locales/ folder.
+# DO NOT INCLUDE "locales/" folder. Only file name with or without extension
+#
+# Example:
+# localeFiles.append("fr")
+# Or:
+# localeFiles.append("fr.json")
+
+for locFile in localeFiles:
+    locFilePath = os.path.join("locales", locFile if locFile.endswith(".json") else locFile+".json")
+    includefiles.append((locFilePath, locFilePath))
+
 PYTHON_DLLS_DIR = None
 
 for pypath in sys.path:
@@ -30,7 +47,7 @@ if sys.platform == "win32":
     base = "Win32GUI"
 setup(
     name = 'Game Translator',
-    version = '0.5.5.8',
+    version = '0.5.5.9',
     description = 'An auto game translation tool.',
     author = 'Rodanel',
     options = {'build_exe': {'includes':includes,'excludes':excludes,'packages':packages,'include_files':includefiles}},

@@ -39,7 +39,7 @@ root.minsize(window_width, window_height)
 
 #Settings
 
-settingsButton = ttk.Button(root, text=settings.language.settings, bootstyle=(INFO, OUTLINE), command=lambda:settings.window(root))
+settingsButton = ttk.Button(root, text=settings.locale.settings, bootstyle=(INFO, OUTLINE), command=lambda:settings.window(root))
 settingsButton.pack(side=TOP, anchor=E)
 
 # set icon
@@ -59,12 +59,12 @@ gameType = GameType.EMPTY
 # select game excutable
 def browse_game():
     global filename, gameType
-    filename = filedialog.askopenfilename(initialdir=getcwd(), title=settings.language.selectGameExecutable, filetypes= [(settings.language.exeFile, "*.exe")])
+    filename = filedialog.askopenfilename(initialdir=getcwd(), title=settings.locale.selectGameExecutable, filetypes= [(settings.locale.exeFile, "*.exe")])
     gameType = detect_game(filename)
     if gameType == GameType.RENPY:
-        messagebox.showinfo(title=settings.language.detectedRenpyTitle, message=settings.language.detectedRenpyDesc)
+        messagebox.showinfo(title=settings.locale.detectedRenpyTitle, message=settings.locale.detectedRenpyDesc)
     elif gameType == GameType.NONE:
-        messagebox.showwarning(title=settings.language.unsupportedGameTitle, message=settings.language.unsupportedGame(filePath=filename))
+        messagebox.showwarning(title=settings.locale.unsupportedGameTitle, message=settings.locale.unsupportedGame(filePath=filename))
     if gameType != GameType.NONE and gameType != GameType.EMPTY:
         settings.addDefaultGameSettingsIFNotExists(gameType, filename)
         startButton["state"] = "normal"
@@ -89,16 +89,16 @@ def translate():
     else:
         if gameType == GameType.RENPY and renpyFrame is not None:
             try:
-                startButton["text"] = settings.language.cancelButton
+                startButton["text"] = settings.locale.cancelButton
                 started = True
                 browseButton["state"] = "disabled"
                 settingsButton["state"] = "disabled"
                 zipButton["state"] = "disabled"
                 renpyFrame.generate_translation()
             except Exception as e:
-                messagebox.showerror(title=settings.language.errorTitle, message=str(e))
+                messagebox.showerror(title=settings.locale.errorTitle, message=str(e))
             finally:
-                startButton["text"] = settings.language.startButton
+                startButton["text"] = settings.locale.startButton
                 browseButton["state"] = "normal"
                 startButton["state"] = "normal"
                 settingsButton["state"] = "normal"
@@ -106,7 +106,7 @@ def translate():
 
             started = False
         elif gameType == GameType.NONE:
-            messagebox.showwarning(title=settings.language.unsupportedGameTitle, message=settings.language.unsupportedGameTitle(filePath=filename))
+            messagebox.showwarning(title=settings.locale.unsupportedGameTitle, message=settings.locale.unsupportedGameTitle(filePath=filename))
 def start_translation():
     start_translation_thread = threading.Thread(target=translate)
     start_translation_thread.daemon = True
@@ -134,30 +134,30 @@ def start_zipping():
 # buttons
 
 
-browseButton = ttk.Button(root, text=settings.language.browseButton, bootstyle=SUCCESS, command=browse_game)
+browseButton = ttk.Button(root, text=settings.locale.browseButton, bootstyle=SUCCESS, command=browse_game)
 browseButton.pack(side=BOTTOM, fill=X)
 
 margin1 = ttk.Frame(root, height=5)
 margin1.pack(side=BOTTOM, fill=X)
 
-zipButton = ttk.Button(root, text=settings.language.zipButton, bootstyle=SUCCESS, command=lambda:start_zipping())
+zipButton = ttk.Button(root, text=settings.locale.zipButton, bootstyle=SUCCESS, command=lambda:start_zipping())
 zipButton.pack(side=BOTTOM, fill=X)
 zipButton["state"] = "disabled"
 
 margin2 = ttk.Frame(root, height=5)
 margin2.pack(side=BOTTOM, fill=X)
 
-startButton = ttk.Button(root, text=settings.language.startButton, bootstyle=SUCCESS, command=lambda:start_translation())
+startButton = ttk.Button(root, text=settings.locale.startButton, bootstyle=SUCCESS, command=lambda:start_translation())
 startButton.pack(side=BOTTOM, fill=X)
 
 startButton["state"] = "disabled"
 
 def updateButtons():
-    browseButton["text"] = settings.language.browseButton
-    startButton["text"] = settings.language.startButton
-    zipButton["text"] = settings.language.zipButton
-    settingsButton["text"] = settings.language.settings
-settings.onUpdate(Settings.LANGUAGE, updateButtons)
+    browseButton["text"] = settings.locale.browseButton
+    startButton["text"] = settings.locale.startButton
+    zipButton["text"] = settings.locale.zipButton
+    settingsButton["text"] = settings.locale.settings
+settings.onUpdate(Settings.LOCALE, updateButtons)
 # find current frame
 def destroyEmptyFrame():
     global emptyFrame
@@ -177,11 +177,11 @@ def showFrame():
     if gameType == GameType.NONE or gameType == GameType.EMPTY:
         destroyEmptyFrame()
         emptyFrame = set_frame_attrs(emptyFrame, root)
-        emptyLabel = ttk.Label(emptyFrame, text=settings.language.browseLabel)
+        emptyLabel = ttk.Label(emptyFrame, text=settings.locale.browseLabel)
         emptyLabel.pack(fill=Y, expand=True, anchor=CENTER)
         def updateEmptyFrameLang():
-            emptyLabel["text"] = settings.language.browseLabel
-        settings.onUpdate(Settings.LANGUAGE, updateEmptyFrameLang)
+            emptyLabel["text"] = settings.locale.browseLabel
+        settings.onUpdate(Settings.LOCALE, updateEmptyFrameLang)
     else:
         destroyEmptyFrame()
     if gameType == GameType.RENPY:
