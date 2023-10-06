@@ -458,3 +458,13 @@ class Turkish(LanguageBase):
             return "Yazı veya buton bulunamadı."
         else:
             return str(count)+" yazı ve buton optimize edildi."
+        
+    @classmethod
+    @property
+    def alreadyActiveTitle(cls):
+        return "Zaten Aktif"
+    
+    @classmethod
+    @property
+    def settingsWindowAlreadyActive(cls):
+        return "Ayarlar penceresi zaten aktif."

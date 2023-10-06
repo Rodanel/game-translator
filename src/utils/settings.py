@@ -146,5 +146,5 @@ class Settings(object):
             self.__window__.grab_set()
             self.__window__.wait_window()
         else:
-            messagebox.showwarning("Already Active", message="Settings window already is active.")
+            messagebox.showwarning(settings.language.alreadyActiveTitle, message=settings.language.settingsWindowAlreadyActive)
 settings = Settings()

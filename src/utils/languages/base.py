@@ -453,3 +453,12 @@ class LanguageBase(object):
         else:
             return str(count)+" string%s optimized." % ("s" if count > 1 else "")
     
+    @classmethod
+    @property
+    def alreadyActiveTitle(cls):
+        return "Already Active"
+    
+    @classmethod
+    @property
+    def settingsWindowAlreadyActive(cls):
+        return "Settings window already is active."
