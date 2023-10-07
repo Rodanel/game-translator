@@ -7,6 +7,8 @@ from src.utils.assets import MyAssets
 includefiles = [
     (MyAssets.favicon, MyAssets.favicon),
     (MyAssets.icon, MyAssets.icon),
+    ("README.md", "README.md"),
+    ("LICENSE", "LICENSE"),
 ]
 
 localeFiles = ["en", "tr"]
