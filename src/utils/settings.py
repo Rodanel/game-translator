@@ -18,7 +18,7 @@ class Settings(object):
     OPTIMIZE_TEXTS = "optimizeTexts"
     FORCE_REGENERATE_TRANSLATION_FILES = "forceRegenerateTranslationFiles"
     TRANSLATE_WITH_GOOGLE_TRANSLATE = "translateWithGoogleTranslate"
-    GOOGLE_TRANSLATE_LANGUAGE_CODE = "googleTranslateLanguageCode"
+    GOOGLE_TRANSLATE_LANGUAGE = "googleTranslateLanguage"
 
     LOCALE = "locale"
 
@@ -35,7 +35,7 @@ class Settings(object):
                 Settings.OPTIMIZE_TEXTS: False,
                 Settings.FORCE_REGENERATE_TRANSLATION_FILES: False,
                 Settings.TRANSLATE_WITH_GOOGLE_TRANSLATE: False,
-                Settings.GOOGLE_TRANSLATE_LANGUAGE_CODE: "",
+                Settings.GOOGLE_TRANSLATE_LANGUAGE: "",
             }
         else:
             return {}

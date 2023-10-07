@@ -198,14 +198,14 @@ class Locale(object):
             else:
                 return self.base.renpyGameTranslation
 
-    def gameName(self, filePath: str):
+    def gameName(self, gamePath: str):
         try:
-            return self.__locales__[self.__locale__]["gameName"].format(filePath)
+            return self.__locales__[self.__locale__]["gameName"].format(gamePath)
         except:
             if self.isBase:
                 raise Exception(Locale.__KEYNOT_FOUND_ERROR__)
             else:
-                return self.base.gameName
+                return self.base.gameName(gamePath)
     
     @property
     def languageNameDot(self):

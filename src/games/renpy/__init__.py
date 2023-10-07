@@ -87,12 +87,13 @@ class RenpyFrame(object):
         self.__root__ = root
         self.__frame__ = None
         self.__filename__ = filename
+        settings.addDefaultGameSettingsIFNotExists(GameType.RENPY, self.dirname)
         self.__frame__ = set_frame_attrs(self.__frame__, root)
         wrap_length = 500
         tb_width = 40
         self.__titleLabel__ = ttk.Label(self.__frame__, text=settings.locale.renpyGameTranslation, wraplength=wrap_length)
         self.__titleLabel__.pack(side="top", anchor="center")
-        self.__gamePathLabel__ = ttk.Label(self.__frame__, text=settings.locale.gameName(filePath=self.__filename__), wraplength=wrap_length)
+        self.__gamePathLabel__ = ttk.Label(self.__frame__, text=settings.locale.gameName(gamePath=self.dirname), wraplength=wrap_length)
         self.__gamePathLabel__.pack(side="top", anchor="center")
     
         self.__languageNameFrame__ = ttk.Frame(self.__frame__)
@@ -255,7 +256,7 @@ class RenpyFrame(object):
     
     def update_widget_texts(self):
         self.__titleLabel__["text"] = settings.locale.renpyGameTranslation
-        self.__gamePathLabel__["text"] = settings.locale.gameName(filePath=self.__filename__)
+        self.__gamePathLabel__["text"] = settings.locale.gameName(gamePath=self.dirname)
         self.__languageNameLabel__["text"] = settings.locale.languageNameDot
         self.__languageFolderNameLabel__["text"] = settings.locale.languageFolderNameDot
         self.__lockLocalizationCheck__["text"] = settings.locale.lockTranslation
@@ -298,20 +299,20 @@ class RenpyFrame(object):
             _files = self.__get_ignored_files()
             if self.ignoredRpaFile not in _files:
                 _files.append(self.ignoredRpaFile)
-                settings.updateGame(GameType.RENPY, self.filename, {Settings.IGNORED_RPA_FILES: _files})
+                settings.updateGame(GameType.RENPY, self.dirname, {Settings.IGNORED_RPA_FILES: _files})
                 self.__restore_ignoredRpaFiles()
     def __remove_IgnoredRPAFile(self):
         if len(self.ignoredRpaFile) > 0:
             _files = self.__get_ignored_files()
             if self.ignoredRpaFile in _files:
                 _files.remove(self.ignoredRpaFile)
-                settings.updateGame(GameType.RENPY, self.filename, {Settings.IGNORED_RPA_FILES: _files})
+                settings.updateGame(GameType.RENPY, self.dirname, {Settings.IGNORED_RPA_FILES: _files})
                 self.__restore_ignoredRpaFiles()
     def __get_ignored_files(self):
         _files = []
         try:
             defaultSettings = Settings.getDefault(GameType.RENPY)
-            gameSettings = settings.data[str(GameType.RENPY)][self.filename]
+            gameSettings = settings.data[str(GameType.RENPY)][self.dirname]
             _files = gameSettings[Settings.IGNORED_RPA_FILES] if Settings.IGNORED_RPA_FILES in gameSettings else defaultSettings[Settings.IGNORED_RPA_FILES]
         except:
             pass
@@ -326,7 +327,7 @@ class RenpyFrame(object):
         self.__save_setting(Settings.TRANSLATE_WITH_GOOGLE_TRANSLATE, self.__translateWithGoogleTranslate__)
         self.__update_googleTranslateLanguageState()
     def __save_googleTranslateLanguage(self, *args):
-        self.__save_setting(Settings.GOOGLE_TRANSLATE_LANGUAGE_CODE, self.__googleTranslateLanguage__)
+        self.__save_setting(Settings.GOOGLE_TRANSLATE_LANGUAGE, self.__googleTranslateLanguage__)
     def __update_googleTranslateLanguageState(self, disabled:bool= False):
         if disabled:
             self.__googleTranslateLanguageLabel__["state"] = "disabled"
@@ -349,11 +350,11 @@ class RenpyFrame(object):
         self.__update_googleTranslateLanguageState(disabled)
 
     def __save_setting(self, propType, prop):
-        settings.updateGame(GameType.RENPY, self.filename, {propType: prop.get()})
+        settings.updateGame(GameType.RENPY, self.dirname, {propType: prop.get()})
     def __restore_setting(self, propType, prop):
         try:
             defaultSettings = Settings.getDefault(GameType.RENPY)
-            gameSettings = settings.data[str(GameType.RENPY)][self.filename]
+            gameSettings = settings.data[str(GameType.RENPY)][self.dirname]
             prop.set(gameSettings[propType] if propType in gameSettings else defaultSettings[propType])
         except Exception as e:
             print("Could not restore setting: "+propType)
@@ -387,7 +388,7 @@ class RenpyFrame(object):
         self.__restore_setting(Settings.TRANSLATE_WITH_GOOGLE_TRANSLATE, self.__translateWithGoogleTranslate__)
         self.__translateWithGoogleTranslate__.trace_add("write", self.__save_translateWithGoogleTranslate)
 
-        self.__restore_setting(Settings.GOOGLE_TRANSLATE_LANGUAGE_CODE, self.__googleTranslateLanguage__)
+        self.__restore_setting(Settings.GOOGLE_TRANSLATE_LANGUAGE, self.__googleTranslateLanguage__)
         self.__googleTranslateLanguage__.trace_add("write", self.__save_googleTranslateLanguage)
         self.__update_googleTranslateLanguageState()
 

@@ -66,7 +66,6 @@ def browse_game():
     elif gameType == GameType.NONE:
         messagebox.showwarning(title=settings.locale.unsupportedGameTitle, message=settings.locale.unsupportedGame(filePath=filename))
     if gameType != GameType.NONE and gameType != GameType.EMPTY:
-        settings.addDefaultGameSettingsIFNotExists(gameType, filename)
         startButton["state"] = "normal"
         zipButton["state"] = "normal"
     else:
