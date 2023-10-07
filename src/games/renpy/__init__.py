@@ -941,3 +941,13 @@ class RenpyFrame(object):
             self.progress = settings.locale.creatingArchiveError(error=error_text)
             messagebox.showerror(settings.locale.creatingArchiveErrorTitle, message=settings.locale.creatingArchiveError())
             self.save_progress()
+    def launch(self):
+        try:
+            subprocess.call([self.filename])
+        except:
+            error_text = traceback.format_exc()
+            print(error_text)
+            self.progressOrj = settings.locale.base.launchTheGameError(error=error_text)
+            self.progress = settings.locale.launchTheGameError(error=error_text)
+            messagebox.showerror(settings.locale.creatingArchiveErrorTitle, message=settings.locale.launchTheGameError())
+            self.save_progress()

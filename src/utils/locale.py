@@ -943,3 +943,22 @@ class Locale(object):
                 raise Exception(Locale.__KEYNOT_FOUND_ERROR__)
             else:
                 return self.base.settingsWindowAlreadyActive
+    
+    @property
+    def launchTheGame(self):
+        try:
+            return self.__locales__[self.__locale__]["launchTheGame"]
+        except:
+            if self.isBase:
+                raise Exception(Locale.__KEYNOT_FOUND_ERROR__)
+            else:
+                return self.base.launchTheGame
+    
+    def launchTheGameError(self, error: str=None):
+        try:
+            return self.__locales__[self.__locale__]["launchTheGameError"].format(self.seeLogs if error is None else error)
+        except:
+            if self.isBase:
+                raise Exception(Locale.__KEYNOT_FOUND_ERROR__)
+            else:
+                return self.base.launchTheGameError(error=error)

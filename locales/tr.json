@@ -94,5 +94,7 @@
     "optimizingFile": "\"{0}\" içindeki yazılar optimize ediliyor...",
     "optimizedTextAndButtons": "{0} dize optimize edildi.",
     "alreadyActiveTitle": "Zaten Etkin",
-    "settingsWindowAlreadyActive": "Ayarlar penceresi zaten etkin."
+    "settingsWindowAlreadyActive": "Ayarlar penceresi zaten etkin.",
+    "launchTheGame": "Oyunu Başlat",
+    "launchTheGameError": "Oyun başlatılamadı!\n\n{0}"
 }

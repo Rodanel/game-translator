@@ -94,5 +94,7 @@
     "optimizingFile": "Optimizing texts in \"{0}\"",
     "optimizedTextAndButtons": "{0} string(s) optimized.",
     "alreadyActiveTitle": "Already Active",
-    "settingsWindowAlreadyActive": "Settings window is already active."
+    "settingsWindowAlreadyActive": "Settings window is already active.",
+    "launchTheGame": "Launch the Game",
+    "launchTheGameError": "Could not launch the game!\n\n{0}"
 }

@@ -68,9 +68,11 @@ def browse_game():
     if gameType != GameType.NONE and gameType != GameType.EMPTY:
         startButton["state"] = "normal"
         zipButton["state"] = "normal"
+        launchButton["state"] = "normal"
     else:
         startButton["state"] = "disabled"
         zipButton["state"] = "disabled"
+        launchButton["state"] = "disabled"
     showFrame()
 
 started = False
@@ -94,6 +96,7 @@ def translate():
                 browseButton["state"] = "disabled"
                 settingsButton["state"] = "disabled"
                 zipButton["state"] = "disabled"
+                launchButton["state"] = "disabled"
                 renpyFrame.generate_translation()
             except Exception as e:
                 messagebox.showerror(title=settings.locale.errorTitle, message=str(e))
@@ -103,6 +106,7 @@ def translate():
                 startButton["state"] = "normal"
                 settingsButton["state"] = "normal"
                 zipButton["state"] = "normal"
+                launchButton["state"] = "normal"
 
             started = False
         elif gameType == GameType.NONE:
@@ -118,6 +122,7 @@ def zip_game():
             browseButton["state"] = "disabled"
             startButton["state"] = "disabled"
             zipButton["state"] = "disabled"
+            launchButton["state"] = "disabled"
             renpyFrame.archive()
         except:
             print(traceback.format_exc())
@@ -125,14 +130,37 @@ def zip_game():
             browseButton["state"] = "normal"
             startButton["state"] = "normal"
             zipButton["state"] = "normal"
+            launchButton["state"] = "normal"
     pass
 
 def start_zipping():
     start_zipping_thread = threading.Thread(target=zip_game)
     start_zipping_thread.daemon = True
     start_zipping_thread.start()
-# buttons
 
+def launch_the_game():
+    if gameType == GameType.RENPY and renpyFrame is not None:
+        try:
+            browseButton["state"] = "disabled"
+            startButton["state"] = "disabled"
+            zipButton["state"] = "disabled"
+            launchButton["state"] = "disabled"
+            renpyFrame.launch()
+        except:
+            print(traceback.format_exc())
+        finally:
+            browseButton["state"] = "normal"
+            startButton["state"] = "normal"
+            zipButton["state"] = "normal"
+            launchButton["state"] = "normal"
+    pass
+
+def start_launching():
+    start_launching_thread = threading.Thread(target=launch_the_game)
+    start_launching_thread.daemon = True
+    start_launching_thread.start()
+
+# buttons
 
 browseButton = ttk.Button(root, text=settings.locale.browseButton, bootstyle=SUCCESS, command=browse_game)
 browseButton.pack(side=BOTTOM, fill=X)
@@ -140,12 +168,19 @@ browseButton.pack(side=BOTTOM, fill=X)
 margin1 = ttk.Frame(root, height=5)
 margin1.pack(side=BOTTOM, fill=X)
 
+launchButton = ttk.Button(root, text=settings.locale.launchTheGame, bootstyle=SUCCESS, command=start_launching)
+launchButton.pack(side=BOTTOM, fill=X)
+launchButton["state"] = "disabled"
+
+margin2 = ttk.Frame(root, height=5)
+margin2.pack(side=BOTTOM, fill=X)
+
 zipButton = ttk.Button(root, text=settings.locale.zipButton, bootstyle=SUCCESS, command=lambda:start_zipping())
 zipButton.pack(side=BOTTOM, fill=X)
 zipButton["state"] = "disabled"
 
-margin2 = ttk.Frame(root, height=5)
-margin2.pack(side=BOTTOM, fill=X)
+margin3 = ttk.Frame(root, height=5)
+margin3.pack(side=BOTTOM, fill=X)
 
 startButton = ttk.Button(root, text=settings.locale.startButton, bootstyle=SUCCESS, command=lambda:start_translation())
 startButton.pack(side=BOTTOM, fill=X)
@@ -156,6 +191,7 @@ def updateButtons():
     browseButton["text"] = settings.locale.browseButton
     startButton["text"] = settings.locale.startButton
     zipButton["text"] = settings.locale.zipButton
+    launchButton["text"] = settings.locale.launchTheGame
     settingsButton["text"] = settings.locale.settings
 settings.onUpdate(Settings.LOCALE, updateButtons)
 # find current frame
