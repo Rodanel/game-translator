@@ -70,6 +70,7 @@ def browse_game():
         zipButton["state"] = "normal"
     else:
         startButton["state"] = "disabled"
+        zipButton["state"] = "disabled"
     showFrame()
 
 started = False
