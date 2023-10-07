@@ -3,6 +3,7 @@ from cx_Freeze import setup,Executable
 import os
 
 from src.utils.assets import MyAssets
+from src.utils.tool import Tool
 
 includefiles = [
     (MyAssets.favicon, MyAssets.favicon),
@@ -48,11 +49,10 @@ base = None
 if sys.platform == "win32":
     base = "Win32GUI"
 setup(
-    name = 'Game Translator',
-    version = '0.5.6.1',
-    description = 'An auto game translation tool.',
-    author = 'Rodanel',
+    name = Tool.NAME,
+    description = Tool.DESCRIPTION,
+    version = Tool.VERSION,
+    author = Tool.AUTHOR,
     options = {'build_exe': {'includes':includes,'excludes':excludes,'packages':packages,'include_files':includefiles}},
-
     executables = [Executable('game_translator.py', target_name="Game Translator", icon='assets/favicon.ico', copyright="Copyright © Rodanel 2023", base = base)]
 )
