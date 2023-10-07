@@ -1,5 +1,5 @@
 import json
-from os import path, getcwd
+from os import path, makedirs
 from types import *
 from src.games.detect_game import GameType
 import tkinter as tk
@@ -7,6 +7,8 @@ from tkinter import messagebox
 import ttkbootstrap as ttk
 from ttkbootstrap.constants import *
 from src.utils.locale import Locale
+from platformdirs import user_data_dir
+from src.utils.tool import Tool
 
 class Settings(object):
     LANGUAGE_NAME = "languageName"
@@ -43,7 +45,10 @@ class Settings(object):
     def __init__(self):
         self.__window__ = None
         self.__onUpdates__ = []
-        self.__path__ = path.join(getcwd(), "settings.json")
+        cache_dir = user_data_dir(Tool.NAME, Tool.AUTHOR)
+        if not path.exists(cache_dir):
+            makedirs(cache_dir)
+        self.__path__ = path.join(cache_dir, "settings.json")
         if path.exists(self.__path__):
             with open(self.__path__, "r", encoding="utf8") as outfile:
                 self.data = json.load(outfile)
