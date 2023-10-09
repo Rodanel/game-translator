@@ -25,7 +25,7 @@
     "add": "Add",
     "remove": "Remove",
     "decompileRPYCFiles": "Decompile RPYC files.",
-    "forceRegenerateTranslation": "Force regenerate translation files. (Adds only missing translations.)",
+    "forceRegenerateTranslation": "Force regenerate the translation files. (Adds only missing translations.)",
     "translateWithGoogle": "Translate with Google Translate (Experimental and may extend completion time).",
     "translateToDot": "Translate to:",
     "noFileAdded": "No archive file added.",
