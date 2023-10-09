@@ -7,24 +7,14 @@ from src.utils.assets import MyAssets
 from src.utils.tool import Tool
 
 includefiles = [
-    (MyAssets.favicon, MyAssets.favicon),
-    (MyAssets.icon, MyAssets.icon),
+    ("assets/", "assets/"),
+    ("locales/", "locales/"),
     ("LICENSE", "LICENSE"),
 ]
 
 for readmeFile in os.listdir(os.getcwd()):
     if readmeFile.lower().endswith(".md"):
-        includefiles.append((readmeFile, readmeFile))   
-
-localesPath = os.path.join(os.getcwd(), Tool.LOCALE_FOLDER_NAME)
-
-if not os.path.exists(os.path.join(localesPath, Tool.DEFAULT_LOCALE_FILE+".json")):
-    raise Exception("Default locale file "+Tool.DEFAULT_LOCALE_FILE+".json not found. This locale file required for this tool.")
-
-for locFile in os.listdir(localesPath):
-    locFileFullPath = os.path.abspath(os.path.join(localesPath, locFile))
-    if os.path.isfile(locFileFullPath) and locFileFullPath.endswith(".json"):
-        includefiles.append((locFileFullPath, os.path.join(Tool.LOCALE_FOLDER_NAME, locFile)))
+        includefiles.append((readmeFile, readmeFile))
 
 PYTHON_DLLS_DIR = None
 
