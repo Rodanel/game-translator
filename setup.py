@@ -12,22 +12,15 @@ includefiles = [
     ("LICENSE", "LICENSE"),
 ]
 
-localeFiles = ["en", "tr"]
+localesPath = os.path.join(os.getcwd(), Tool.LOCALE_FOLDER_NAME)
 
-# Add your locale here
-# localeFiles.append("your_locale_file_name")
-#
-# Your locale file should be inside locales/ folder.
-# DO NOT INCLUDE "locales/" folder. Only file name with or without extension
-#
-# Example:
-# localeFiles.append("fr")
-# Or:
-# localeFiles.append("fr.json")
+if not os.path.exists(os.path.join(localesPath, Tool.DEFAULT_LOCALE_FILE+".json")):
+    raise Exception("Default locale file "+Tool.DEFAULT_LOCALE_FILE+".json not found. This locale file required for this tool.")
 
-for locFile in localeFiles:
-    locFilePath = os.path.join("locales", locFile if locFile.endswith(".json") else locFile+".json")
-    includefiles.append((locFilePath, locFilePath))
+for locFile in os.listdir(localesPath):
+    locFileFullPath = os.path.abspath(os.path.join(localesPath, locFile))
+    if os.path.isfile(locFileFullPath) and locFileFullPath.endswith(".json"):
+        includefiles.append((locFileFullPath, os.path.join(Tool.LOCALE_FOLDER_NAME, locFile)))
 
 PYTHON_DLLS_DIR = None
 

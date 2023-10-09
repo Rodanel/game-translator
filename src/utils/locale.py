@@ -1,4 +1,5 @@
 import json
+from src.utils.tool import Tool
 
 from os import getcwd, path, listdir
 
@@ -6,18 +7,21 @@ from typing import TypeVar, Type
 T = TypeVar('T', bound='Locale')
 class Locale(object):
 
-    DEFAULT_LOCALE = "English"
-
     __KEYNOT_FOUND_ERROR__ = "Locale key not found. Corrupted locale json file."
 
     def __init__(self, locale:str=None, isBase:bool=False):
         self.__isBase__ = isBase
-        if locale is None:
-            self.__locale__ = Locale.DEFAULT_LOCALE
-        else:
-            self.__locale__ = locale
+        self.__locale__ = locale
         self.__locales__ = {}
         self.__path__ = path.join(getcwd(), "locales")
+        self.__init__locale()
+        if self.__locale__ is not None and self.__locale__ not in self.__locales__:
+            self.__locales__.clear()
+            self.__init__locale()
+        if self.__locale__ is None:
+            raise Exception("Specified locale is missing.")
+    
+    def __init__locale(self):
         for localeF in listdir(self.__path__):
             if localeF.endswith(".json"):
                 with open(path.join(self.__path__, localeF), "r") as localeFile:
@@ -25,11 +29,14 @@ class Locale(object):
                 localeFile.closed
                 if "localeCode" in localeFileContent and "localeName" in localeFileContent:
                     self.__locales__[localeFileContent["localeName"]] = localeFileContent
+                    if self.__locale__ is None and localeF == Tool.DEFAULT_LOCALE_FILE+".json":
+                        self.__locale__ = localeFileContent["localeName"]
                 else:
                     print("Locale file \"{}\" could not load because localeCode or localeName attr is missing.")
+
     @property
     def base(self):
-        return self.__class__(locale=Locale.DEFAULT_LOCALE, isBase=True)
+        return self.__class__(isBase=True)
 
     @property
     def isBase(self):
@@ -38,6 +45,16 @@ class Locale(object):
     @property
     def locales(self):
         return [key for key,value in self.__locales__.items()]
+
+    @property
+    def localeName(self):
+        try:
+            return self.__locales__[self.__locale__]["localeName"]
+        except:
+            if self.isBase:
+                raise Exception(Locale.__KEYNOT_FOUND_ERROR__)
+            else:
+                return self.base.localeName
 
     @property
     def browseLabel(self):

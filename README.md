@@ -37,23 +37,7 @@
 
 - Create a copy from {project-path}/locales/en.json
 - Update "localeCode" and "localeName" for your language in that copy.
-- The tools will detect this language automatically.
-
-### Including Your Language to Build
-
-- Open setup.py and find this comment line:
-
-```
-# Add your locale here
-```
-
-- And add your locale file after that comment lines:
-
-```
-# Your locale file should be inside "locales/" folder
-localeFiles.append("your_locale_file_name") # DO NOT INCLUDE "locales/" folder. Only file name with or without extension
-```
-
+- The tools will detect this language automatically (Including build.).
 
 ## Building
 

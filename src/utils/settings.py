@@ -76,7 +76,7 @@ class Settings(object):
     @property
     def localeText(self):
         if Settings.LOCALE not in self.data:
-            self.data[Settings.LOCALE] = Locale.DEFAULT_LOCALE
+            self.data[Settings.LOCALE] = Locale().localeName
             self.save()
         return self.data[Settings.LOCALE]
     @localeText.setter
