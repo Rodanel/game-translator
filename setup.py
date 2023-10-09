@@ -1,6 +1,7 @@
 import sys
 from cx_Freeze import setup,Executable
 import os
+import re
 
 from src.utils.assets import MyAssets
 from src.utils.tool import Tool
@@ -8,9 +9,12 @@ from src.utils.tool import Tool
 includefiles = [
     (MyAssets.favicon, MyAssets.favicon),
     (MyAssets.icon, MyAssets.icon),
-    ("README.md", "README.md"),
     ("LICENSE", "LICENSE"),
 ]
+
+for readmeFile in os.listdir(os.getcwd()):
+    if readmeFile.lower().endswith(".md"):
+        includefiles.append((readmeFile, readmeFile))   
 
 localesPath = os.path.join(os.getcwd(), Tool.LOCALE_FOLDER_NAME)
 

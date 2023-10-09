@@ -1,3 +1,5 @@
+English | [Türkçe](README-tr.md)
+
 # game-translator
 
 # Contents
