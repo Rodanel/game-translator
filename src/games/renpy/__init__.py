@@ -530,6 +530,7 @@ class RenpyFrame(object):
         if self.cancelled:
             return True
         if self.decompileRpycFiles:
+            showErrorInProgress = True
             try:
                 self.progressOrj = settings.locale.base.decompilingRpyc
                 self.progress = settings.locale.decompilingRpyc
@@ -544,8 +545,15 @@ class RenpyFrame(object):
                     if not line:
                         break
                     else:
-                        self.progressOrj = self.__fix_decompile_rpyc_files_line(fix_console(line), translate=False)
-                        self.progress = self.__fix_decompile_rpyc_files_line(fix_console(line))
+                        lineResp = self.__fix_decompile_rpyc_files_line(fix_console(line), translate=False)
+                        if "Powershell is required, unable to continue" in lineResp:
+                            self.progressOrj = settings.locale.base.requiresPowershell
+                            self.progress = settings.locale.requiresPowershell
+                            showErrorInProgress = False
+                            raise Exception(settings.locale.requiresPowershell)
+                        else:
+                            self.progressOrj = lineResp
+                            self.progress = self.__fix_decompile_rpyc_files_line(fix_console(line))
                 self.progressOrj = settings.locale.base.decompilingRpycCompleted
                 self.progress = settings.locale.decompilingRpycCompleted
                 self.clear_temp_rpyc_decompilers()
@@ -553,10 +561,12 @@ class RenpyFrame(object):
                 self.progressOrj = settings.locale.base.removedTmpFiles
                 self.progress = settings.locale.removedTmpFiles
             except:
+                self.clear_temp_rpyc_decompilers()
                 error_text = traceback.format_exc()
                 print(error_text)
-                self.progressOrj = settings.locale.base.decompileRpycError(error=error_text)
-                self.progress = settings.locale.decompileRpycError(error=error_text)
+                if showErrorInProgress:
+                    self.progressOrj = settings.locale.base.decompileRpycError(error=error_text)
+                    self.progress = settings.locale.decompileRpycError(error=error_text)
                 messagebox.showerror(settings.locale.decompileRpycErrorTitle, message=settings.locale.decompileRpycError())
                 return False
         return True

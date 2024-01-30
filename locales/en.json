@@ -96,5 +96,6 @@
     "alreadyActiveTitle": "Already Active",
     "settingsWindowAlreadyActive": "Settings window is already active.",
     "launchTheGame": "Launch the Game",
-    "launchTheGameError": "Could not launch the game!\n\n{0}"
+    "launchTheGameError": "Could not launch the game!\n\n{0}",
+    "requiresPowershell": "This tool requires powershell to work.\nPowershell should be installed in windows 10 by default. Make sure powershell path exists in your PATH in system environment variables. (Default Powershell Path: C:\\Windows\\System32\\WindowsPowerShell\\v1.0)"
 }

@@ -96,5 +96,6 @@
     "alreadyActiveTitle": "Zaten Etkin",
     "settingsWindowAlreadyActive": "Ayarlar penceresi zaten etkin.",
     "launchTheGame": "Oyunu Başlat",
-    "launchTheGameError": "Oyun başlatılamadı!\n\n{0}"
+    "launchTheGameError": "Oyun başlatılamadı!\n\n{0}",
+    "requiresPowershell": "Bu aracın çalışması için powershell kurulu olması gereklidir.\nPowershell, windows 10'da varsayılan olarak kuruludur. Powershell dosya konumunun ortam değişkenlerindeki PATH'da ekli olduğuna emin olun. (Varsayılan Powershell Konumu: C:\\Windows\\System32\\WindowsPowerShell\\v1.0)"
 }

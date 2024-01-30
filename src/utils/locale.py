@@ -979,3 +979,13 @@ class Locale(object):
                 raise Exception(Locale.__KEYNOT_FOUND_ERROR__)
             else:
                 return self.base.launchTheGameError(error=error)
+
+    @property
+    def requiresPowershell(self):
+        try:
+            return self.__locales__[self.__locale__]["requiresPowershell"]
+        except:
+            if self.isBase:
+                raise Exception(Locale.__KEYNOT_FOUND_ERROR__)
+            else:
+                return self.base.requiresPowershell
