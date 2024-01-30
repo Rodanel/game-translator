@@ -455,15 +455,15 @@ class RenpyFrame(object):
                 if fname.endswith(".rpa"):
                     if path.basename(fname) not in _ignoredFiles:
                         try:
-                            self.progressOrj = settings.locale.base.exrtractingFile(fileName=fname)
-                            self.progress = settings.locale.exrtractingFile(fileName=fname)
+                            self.progressOrj = settings.locale.base.extractingFile(fileName=fname)
+                            self.progress = settings.locale.extractingFile(fileName=fname)
                             print("Exracting "+fname+"...")
                             self.__rpaeditor__ = RpaEditor(fullpath, _extract=True, _version=2)
                             self.__rpaeditor__.start()
                             if self.cancelled:
                                 return True
-                            self.progressOrj = settings.locale.base.exrtractedFileSuccess(fileName=fname)
-                            self.progress = settings.locale.exrtractedFileSuccess(fileName=fname)
+                            self.progressOrj = settings.locale.base.extractedFileSuccess(fileName=fname)
+                            self.progress = settings.locale.extractedFileSuccess(fileName=fname)
                         except:
                             error_text = traceback.format_exc()
                             print(error_text)

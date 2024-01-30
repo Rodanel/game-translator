@@ -362,23 +362,23 @@ class Locale(object):
             else:
                 return self.base.logfileEndDescription(filePath=filePath)
 
-    def exrtractingFile(self, fileName: str):
+    def extractingFile(self, fileName: str):
         try:
-            return self.__locales__[self.__locale__]["exrtractingFile"].format(fileName)
+            return self.__locales__[self.__locale__]["extractingFile"].format(fileName)
         except:
             if self.isBase:
                 raise Exception(Locale.__KEYNOT_FOUND_ERROR__)
             else:
-                return self.base.exrtractingFile(fileName=fileName)
+                return self.base.extractingFile(fileName=fileName)
 
-    def exrtractedFileSuccess(self, fileName: str):
+    def extractedFileSuccess(self, fileName: str):
         try:
-            return self.__locales__[self.__locale__]["exrtractedFileSuccess"].format(fileName)
+            return self.__locales__[self.__locale__]["extractedFileSuccess"].format(fileName)
         except:
             if self.isBase:
                 raise Exception(Locale.__KEYNOT_FOUND_ERROR__)
             else:
-                return self.base.exrtractedFileSuccess(fileName=fileName)
+                return self.base.extractedFileSuccess(fileName=fileName)
 
     @property
     def extractFileErrorTitle(self):
