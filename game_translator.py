@@ -10,10 +10,10 @@ from src.games import renpy
 from src.games.detect_game import detect_game, GameType
 from src.utils.settings import settings, Settings
 from src.utils.assets import MyAssets
-
+from src.utils.tool import Tool
 
 # initialize window
-root = ttk.Window(title="Game Translator by Rodanel", iconphoto=str(MyAssets.icon))
+root = ttk.Window(title="Game Translator by Rodanel v{0}".format(Tool.VERSION), iconphoto=str(MyAssets.icon))
 
 #window_icon = PhotoImage(file = MyAssets.icon)
 #root.iconphoto(False, window_icon)
